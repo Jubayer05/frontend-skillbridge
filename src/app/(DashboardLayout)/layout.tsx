@@ -9,6 +9,7 @@ import {
   getTutorSidebarMenu,
 } from "@/config/sidebar-menus";
 import { useAuth } from "@/context/auth-context";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const sidebarStyles = {
@@ -17,15 +18,18 @@ const sidebarStyles = {
 } as React.CSSProperties;
 
 export default function DashboardLayout({
+  children,
   student,
   admin,
   tutor,
 }: {
+  children: ReactNode;
   student: ReactNode;
   admin: ReactNode;
   tutor: ReactNode;
 }) {
   const { user } = useAuth();
+  const pathname = usePathname();
   const role = user?.role;
   const isAdmin = role === "ADMIN";
   const isTutor = role === "TUTOR";
@@ -34,7 +38,12 @@ export default function DashboardLayout({
     : isTutor
       ? getTutorSidebarMenu(user)
       : getStudentSidebarMenu(user);
-  const dashboardContent = isAdmin ? admin : isTutor ? tutor : student;
+
+  // At /dashboard use the role-specific parallel slot content.
+  // For every other route (sub-pages) render the actual page via children.
+  const isDashboard = pathname === "/dashboard";
+  const dashboardSlot = isAdmin ? admin : isTutor ? tutor : student;
+  const content = isDashboard ? dashboardSlot : children;
 
   return (
     <SidebarProvider style={sidebarStyles}>
@@ -43,7 +52,7 @@ export default function DashboardLayout({
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            {dashboardContent}
+            {content}
           </div>
         </div>
       </SidebarInset>
