@@ -8,8 +8,12 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/auth-context";
+import { logoutUser } from "@/services/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +40,22 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { clearAuth } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      clearAuth();
+      toast.success("Logged out successfully.");
+      router.push("/auth/login");
+      router.refresh();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to log out.";
+      toast.error(message);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -98,7 +118,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

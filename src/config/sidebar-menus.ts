@@ -6,11 +6,11 @@ export function getAdminSidebarMenu(user: AuthUser | null): AppSidebarMenuProps 
     navMain: [
       {
         title: "Dashboard",
-        url: "/admin/dashboard",
+        url: "/dashboard",
         icon: "LayoutDashboard",
         isActive: true,
         items: [
-          { title: "Overview", url: "/admin/dashboard" },
+          { title: "Overview", url: "/dashboard" },
           { title: "Analytics", url: "/admin/analytics" },
           { title: "Activity", url: "/admin/activity" },
         ],
@@ -59,7 +59,7 @@ export function getStudentSidebarMenu(user: AuthUser | null): AppSidebarMenuProp
     navMain: [
       {
         title: "Dashboard",
-        url: "/student/dashboard",
+        url: "/dashboard",
         icon: "LayoutDashboard",
         isActive: true,
       },
@@ -96,6 +96,60 @@ export function getStudentSidebarMenu(user: AuthUser | null): AppSidebarMenuProp
     ],
     user: {
       name: user?.name ?? "Student",
+      email: user?.email ?? "",
+      avatar: "",
+    },
+  };
+}
+
+export function getTutorSidebarMenu(user: AuthUser | null): AppSidebarMenuProps {
+  return {
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: "LayoutDashboard",
+        isActive: true,
+        items: [
+          { title: "Overview", url: "/dashboard" },
+          { title: "My Courses", url: "/tutor/courses" },
+          { title: "Students", url: "/tutor/students" },
+        ],
+      },
+      {
+        title: "Course Management",
+        url: "/tutor/courses",
+        icon: "BookOpen",
+        items: [
+          { title: "All Courses", url: "/tutor/courses" },
+          { title: "Create Course", url: "/tutor/courses/create" },
+          { title: "Assignments", url: "/tutor/assignments" },
+        ],
+      },
+      {
+        title: "Settings",
+        url: "/tutor/settings",
+        icon: "Settings",
+        items: [
+          { title: "Profile", url: "/tutor/settings/profile" },
+          { title: "Notifications", url: "/tutor/settings/notifications" },
+        ],
+      },
+    ],
+    projects: [
+      {
+        name: "Active Courses",
+        url: "/tutor/courses?filter=active",
+        icon: "Frame",
+      },
+      {
+        name: "Draft Courses",
+        url: "/tutor/courses?filter=draft",
+        icon: "PieChart",
+      },
+    ],
+    user: {
+      name: user?.name ?? "Tutor",
       email: user?.email ?? "",
       avatar: "",
     },
