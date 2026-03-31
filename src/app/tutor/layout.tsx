@@ -1,4 +1,4 @@
-import { DashboardSectionLayout } from "@/components/layout/dashboard-section-layout";
+import { DashboardSectionLayout } from "@/components/dashboard/dashboard-section-layout";
 import type { ReactNode } from "react";
 
 export default function TutorLayout({ children }: { children: ReactNode }) {

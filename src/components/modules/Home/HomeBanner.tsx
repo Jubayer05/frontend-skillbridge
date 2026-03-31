@@ -7,7 +7,7 @@ export function HomeBanner({ className }: { className?: string }) {
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-b from-muted/40 via-background to-background px-6 py-16 shadow-sm dark:from-muted/20 dark:via-background sm:px-12 sm:py-24 md:px-16 lg:px-24",
+        "relative overflow-hidden rounded-2xl border border-border/50 bg-linear-to-b from-muted/40 via-background to-background px-6 py-16 shadow-sm dark:from-muted/20 dark:via-background sm:px-12 sm:py-24 md:px-16 lg:px-24",
         className,
       )}
     >
