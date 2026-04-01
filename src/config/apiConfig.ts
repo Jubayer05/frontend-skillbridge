@@ -4,6 +4,8 @@ const AUTH_BASE_URL = BASE_URL.replace(/\/api\/v1$/, "/api/auth");
 
 export const API_ENDPOINTS = {
   auth: {
+    /** Better Auth built-in: validates session cookie; returns null when expired. */
+    getSession: `${AUTH_BASE_URL}/get-session`,
     login: `${BASE_URL}/auth/login`,
     register: `${BASE_URL}/auth/register`,
     verifyEmail: `${BASE_URL}/auth/verify-email`,
