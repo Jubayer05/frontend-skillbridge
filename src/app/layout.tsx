@@ -1,3 +1,4 @@
+import { SessionExpiredRedirect } from "@/components/auth/session-expired-redirect";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/auth-context";
 import { ThemeProvider } from "@/context/theme-context";
@@ -39,6 +40,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <SessionExpiredRedirect />
             {children}
             <Toaster richColors position="top-right" />
           </ThemeProvider>

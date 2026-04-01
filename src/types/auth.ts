@@ -47,8 +47,15 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+/** Session object returned with login (Better Auth shape). */
+export interface AuthSessionInfo {
+  /** ISO string from API, or unix ms/sec if the runtime serializes differently. */
+  expiresAt: string | number;
+  id?: string;
+}
+
 export interface LoginResponseData {
   user: AuthUser;
-  session: unknown;
+  session: AuthSessionInfo | null;
   accessToken: string | null;
 }

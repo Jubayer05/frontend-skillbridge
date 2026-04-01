@@ -17,8 +17,35 @@ function getUserFromRequest(request: NextRequest): {
   if (!raw) return { role: null, isLoggedIn: false };
 
   try {
-    const user = JSON.parse(decodeURIComponent(raw)) as { role?: string };
-    const role = typeof user?.role === "string" ? user.role : null;
+    const parsed: unknown = JSON.parse(decodeURIComponent(raw));
+
+    // New shape: { user: { role, ... }, sessionExpiresAt }
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "user" in parsed &&
+      "sessionExpiresAt" in parsed
+    ) {
+      const wrapped = parsed as {
+        user?: { role?: string };
+        sessionExpiresAt?: string;
+      };
+      const exp = wrapped.sessionExpiresAt;
+      if (
+        typeof exp === "string" &&
+        !Number.isNaN(Date.parse(exp)) &&
+        Date.parse(exp) <= Date.now()
+      ) {
+        return { role: null, isLoggedIn: false };
+      }
+      const role =
+        typeof wrapped.user?.role === "string" ? wrapped.user.role : null;
+      return { role, isLoggedIn: !!role };
+    }
+
+    // Legacy flat user JSON
+    const flat = parsed as { role?: string };
+    const role = typeof flat?.role === "string" ? flat.role : null;
     return { role, isLoggedIn: !!role };
   } catch {
     return { role: null, isLoggedIn: false };

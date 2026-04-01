@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSessionWatcher } from "@/components/dashboard/dashboard-session-watcher";
 import { SiteHeader } from "@/components/dashboard/site-header";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -66,7 +65,6 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider style={sidebarStyles}>
-      <DashboardSessionWatcher />
       <AppSidebar menu={sidebarMenu} variant="inset" />
       <SidebarInset>
         <SiteHeader />

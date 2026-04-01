@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { loginUser } from "@/services/auth";
-import type { AuthUser } from "@/types/auth";
+import type { AuthSessionInfo, AuthUser } from "@/types/auth";
 import { DemoLoginButtons } from "./demo-login-buttons";
 
 const loginSchema = z.object({
@@ -46,7 +46,8 @@ export function LoginForm() {
     loginUser(data)
       .then((res) => {
         const user = res.data?.user as AuthUser;
-        setAuth(user);
+        const session = res.data?.session as AuthSessionInfo | null | undefined;
+        setAuth(user, session?.expiresAt ?? null);
         toast.success(`Welcome back, ${user.name}!`);
         router.push("/dashboard");
       })
