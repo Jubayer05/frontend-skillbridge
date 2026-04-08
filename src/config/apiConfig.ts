@@ -35,6 +35,15 @@ export const API_ENDPOINTS = {
       `${BASE_URL}/availability/slots/${encodeURIComponent(slotId)}`,
     publicSlots: `${BASE_URL}/availability/public/slots`,
   },
+  bookings: {
+    list: `${BASE_URL}/bookings`,
+    create: `${BASE_URL}/bookings`,
+    byId: (id: string) => `${BASE_URL}/bookings/${encodeURIComponent(id)}`,
+    cancel: (id: string) =>
+      `${BASE_URL}/bookings/${encodeURIComponent(id)}/cancel`,
+    complete: (id: string) =>
+      `${BASE_URL}/bookings/${encodeURIComponent(id)}/complete`,
+  },
   category: {
     list: `${BASE_URL}/categories`,
     create: `${BASE_URL}/categories`,

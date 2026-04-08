@@ -78,6 +78,7 @@ export function getStudentSidebarMenu(
         items: [
           { title: "Overview", url: "/dashboard" },
           { title: "Profile", url: "/dashboard/profile" },
+          { title: "Bookings", url: "/dashboard/bookings" },
         ],
       },
       {
@@ -134,6 +135,13 @@ export function getTutorSidebarMenu(
           { title: "My slots", url: "/tutor/availability" },
           { title: "New slot", url: "/tutor/availability/new" },
         ],
+      },
+      {
+        title: "Bookings",
+        url: "/dashboard/bookings",
+        icon: "ClipboardList",
+        isActive: false,
+        items: [{ title: "All bookings", url: "/dashboard/bookings" }],
       },
       {
         title: "Catalog",

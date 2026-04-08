@@ -3,6 +3,7 @@
 import { ChevronDown, Clock, DollarSign, Users } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ function TutorMini({ slot }: { slot: PublicAvailabilitySlot }) {
 }
 
 function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
+  const router = useRouter();
   return (
     <Card className="bg-background/80">
       <CardHeader className="pb-3">
@@ -87,6 +89,16 @@ function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
           </span>
           <span className="capitalize">{slot.status}</span>
         </div>
+
+        {slot.status === "available" ? (
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => router.push(`/checkout/slots/${slot.id}`)}
+          >
+            Book slot
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );

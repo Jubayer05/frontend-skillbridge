@@ -6,7 +6,7 @@ export type ApiEnvelope<T> = {
 
 export async function apiFetch<T>(
   url: string,
-  options: RequestInit,
+  options: RequestInit = {},
 ): Promise<ApiEnvelope<T>> {
   const response = await fetch(url, {
     ...options,

@@ -12,13 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyProfile } from "@/services/profile";
+import { listBookings } from "@/services/bookings";
+import type { Booking } from "@/types/booking";
 import type { UserProfile } from "@/types/profile";
-
-const upcomingBookings = [
-  { title: "Advanced Algebra with Rahim Ahmed", time: "Today, 5:30 PM" },
-  { title: "Physics Problem Solving", time: "Tomorrow, 7:00 PM" },
-  { title: "IELTS Speaking Practice", time: "Friday, 6:00 PM" },
-];
 
 const quickStats = [
   {
@@ -43,26 +39,36 @@ const quickStats = [
 
 export function StudentDashboardOverview() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    getMyProfile()
-      .then((data) => {
+    void (async () => {
+      try {
+        const data = await getMyProfile();
         if (!active) return;
         setProfile(data);
         setError(null);
-      })
-      .catch((err: Error) => {
+      } catch (err: unknown) {
         if (!active) return;
-        setError(err.message ?? "Failed to load dashboard data");
-      })
-      .finally(() => {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+      }
+
+      try {
+        const rows = await listBookings({ status: "confirmed" });
+        if (!active) return;
+        setBookings(rows);
+      } catch {
+        if (!active) return;
+        setBookings([]);
+      } finally {
         if (!active) return;
         setIsLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
@@ -96,9 +102,28 @@ export function StudentDashboardOverview() {
     );
   }
 
+  const upcoming =
+    (bookings ?? [])
+      .filter((b) => b.status === "confirmed")
+      .filter((b) => {
+        const start = new Date(`${b.date}T${b.startTime}:00Z`).getTime();
+        return Number.isFinite(start) ? start > Date.now() : true;
+      })
+      .slice(0, 3) ?? [];
+
+  const stats = [
+    {
+      label: "Upcoming bookings",
+      value: String(upcoming.length).padStart(2, "0"),
+      icon: CalendarClock,
+      hint: "Next confirmed sessions",
+    },
+    ...quickStats.slice(1),
+  ];
+
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <Card className="border-primary/15 bg-gradient-to-r from-primary/8 via-background to-background">
+      <Card className="border-primary/15 bg-linear-to-r from-primary/8 via-background to-background">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <Sparkles className="size-5 text-primary" />
@@ -112,7 +137,7 @@ export function StudentDashboardOverview() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {quickStats.map((stat) => (
+        {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
               <div>
@@ -136,20 +161,31 @@ export function StudentDashboardOverview() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {upcomingBookings.map((booking) => (
-            <div
-              key={`${booking.title}-${booking.time}`}
-              className="flex items-center justify-between rounded-lg border px-4 py-3"
-            >
-              <div>
-                <p className="font-medium">{booking.title}</p>
-                <p className="text-sm text-muted-foreground">{booking.time}</p>
+          {upcoming.length > 0 ? (
+            upcoming.map((booking) => (
+              <div
+                key={booking.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium truncate">
+                    {booking.subject?.name ?? "Subject"} with{" "}
+                    {booking.tutor?.name ?? "Tutor"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {booking.date} · {booking.startTime}–{booking.endTime}
+                  </p>
+                </div>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  Confirmed
+                </span>
               </div>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                Confirmed
-              </span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              No upcoming bookings yet. Book a slot from the categories page.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

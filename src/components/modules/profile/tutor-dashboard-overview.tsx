@@ -19,13 +19,9 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyProfile } from "@/services/profile";
+import { listBookings } from "@/services/bookings";
+import type { Booking } from "@/types/booking";
 import type { UserProfile } from "@/types/profile";
-
-const sessions = [
-  { title: "Calculus mentoring session", time: "Today, 4:00 PM" },
-  { title: "Career coaching call", time: "Tomorrow, 11:00 AM" },
-  { title: "Group revision workshop", time: "Saturday, 8:00 PM" },
-];
 
 const reviews = [
   {
@@ -40,26 +36,36 @@ const reviews = [
 
 export function TutorDashboardOverview() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    getMyProfile()
-      .then((data) => {
+    void (async () => {
+      try {
+        const data = await getMyProfile();
         if (!active) return;
         setProfile(data);
         setError(null);
-      })
-      .catch((err: Error) => {
+      } catch (err: unknown) {
         if (!active) return;
-        setError(err.message ?? "Failed to load dashboard data");
-      })
-      .finally(() => {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+      }
+
+      try {
+        const rows = await listBookings({ status: "confirmed" });
+        if (!active) return;
+        setBookings(rows);
+      } catch {
+        if (!active) return;
+        setBookings([]);
+      } finally {
         if (!active) return;
         setIsLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
@@ -100,12 +106,21 @@ export function TutorDashboardOverview() {
   const totalReviews = profile?.tutorProfile?.totalReviews ?? 24;
   const hourlyRate = profile?.tutorProfile?.hourlyRate ?? "45.00";
 
+  const upcoming =
+    (bookings ?? [])
+      .filter((b) => b.status === "confirmed")
+      .filter((b) => {
+        const start = new Date(`${b.date}T${b.startTime}:00Z`).getTime();
+        return Number.isFinite(start) ? start > Date.now() : true;
+      })
+      .slice(0, 3) ?? [];
+
   const stats = [
     {
       label: "Sessions this week",
-      value: "09",
+      value: String(upcoming.length).padStart(2, "0"),
       icon: CalendarDays,
-      hint: "3 upcoming today",
+      hint: "Next confirmed sessions",
     },
     {
       label: "Estimated earnings",
@@ -123,7 +138,7 @@ export function TutorDashboardOverview() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <Card className="border-primary/15 bg-gradient-to-r from-primary/8 via-background to-background">
+      <Card className="border-primary/15 bg-linear-to-r from-primary/8 via-background to-background">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-2xl">{`Tutor dashboard for ${profile?.name ?? "Tutor"}`}</CardTitle>
@@ -161,15 +176,22 @@ export function TutorDashboardOverview() {
             <CardDescription>Your next booked tutoring sessions.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {sessions.map((session) => (
-              <div
-                key={`${session.title}-${session.time}`}
-                className="rounded-lg border px-4 py-3"
-              >
-                <p className="font-medium">{session.title}</p>
-                <p className="text-sm text-muted-foreground">{session.time}</p>
-              </div>
-            ))}
+            {upcoming.length > 0 ? (
+              upcoming.map((booking) => (
+                <div key={booking.id} className="rounded-lg border px-4 py-3">
+                  <p className="font-medium">
+                    {booking.subject?.name ?? "Subject"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {booking.date} · {booking.startTime}–{booking.endTime}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                No upcoming sessions yet.
+              </p>
+            )}
           </CardContent>
         </Card>
 

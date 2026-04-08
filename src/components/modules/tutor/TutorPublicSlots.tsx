@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { getTutorProfileByUserId } from "@/services/profile";
 import type { AvailabilitySlot } from "@/types/availability";
 
 export function TutorPublicSlots({ tutorUserId }: { tutorUserId: string }) {
+  const router = useRouter();
   const [slots, setSlots] = useState<AvailabilitySlot[] | null>(null);
   const [tutorName, setTutorName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,10 +136,20 @@ export function TutorPublicSlots({ tutorUserId }: { tutorUserId: string }) {
                     </p>
                   )}
                 </CardHeader>
-                <CardContent className="text-muted-foreground text-sm">
+                <CardContent className="space-y-3 text-muted-foreground text-sm">
                   <span className="text-foreground font-medium">
                     ${slot.price}
                   </span>
+
+                  {slot.status === "available" ? (
+                    <Button
+                      type="button"
+                      className="w-full"
+                      onClick={() => router.push(`/checkout/slots/${slot.id}`)}
+                    >
+                      Book slot
+                    </Button>
+                  ) : null}
                 </CardContent>
               </Card>
             </li>

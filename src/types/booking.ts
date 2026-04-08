@@ -1,0 +1,38 @@
+export type BookingStatus = "confirmed" | "completed" | "cancelled";
+
+export type Booking = {
+  id: string;
+  studentId: string;
+  tutorProfileId: string;
+  availabilitySlotId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalPrice: string;
+  status: BookingStatus;
+  paymentMethod: "COD";
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  tutor: {
+    userId: string;
+    name: string;
+    image: string | null;
+    profileImageUrl: string | null;
+    headline: string;
+    hourlyRate: string;
+  };
+  subject: {
+    id: string;
+    name: string;
+    category: { id: string; name: string };
+  } | null;
+};
+
+export type CreateBookingPayload = {
+  availabilitySlotId: string;
+  paymentMethod?: "COD";
+  notes?: string;
+};
+
