@@ -13,7 +13,7 @@ import { listPublicAvailabilitySlotsBySubject } from "@/services/availability";
 import { listCategories } from "@/services/categoryService";
 import type { Category } from "@/types/category";
 import type { PublicAvailabilitySlot } from "@/types/availability";
-import { formatSlotTitle } from "@/lib/slot-display";
+import { formatSlotTitle, isSlotSessionInFuture } from "@/lib/slot-display";
 import { cn } from "@/lib/utils";
 
 type SubjectRow = NonNullable<Category["subjects"]>[number];
@@ -49,8 +49,15 @@ function TutorMini({ slot }: { slot: PublicAvailabilitySlot }) {
 
 function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
   const router = useRouter();
+  const isBooked = slot.status === "booked";
   return (
-    <Card className="bg-background/80">
+    <Card
+      className={cn(
+        "bg-background/80 transition-colors",
+        isBooked &&
+          "border-amber-500/55 bg-amber-500/6 ring-1 ring-amber-500/25",
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
@@ -59,10 +66,20 @@ function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
             </CardTitle>
             <TutorMini slot={slot} />
           </div>
-          <Badge variant="secondary" className="gap-1">
-            <DollarSign className="size-3.5" />
-            {slot.price}
-          </Badge>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            {isBooked ? (
+              <Badge
+                variant="outline"
+                className="border-amber-600/60 bg-amber-500/15 text-amber-900 dark:border-amber-500/50 dark:text-amber-100"
+              >
+                Booked
+              </Badge>
+            ) : null}
+            <Badge variant="secondary" className="gap-1">
+              <DollarSign className="size-3.5" />
+              {slot.price}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -81,7 +98,15 @@ function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
             <Clock className="size-3.5" />
             UTC
           </span>
-          <span className="capitalize">{slot.status}</span>
+          {!isBooked ? (
+            <span className="capitalize text-emerald-700 dark:text-emerald-400">
+              {slot.status}
+            </span>
+          ) : (
+            <span className="font-medium text-amber-800 dark:text-amber-200">
+              Fully booked
+            </span>
+          )}
         </div>
 
         {slot.status === "available" ? (
@@ -103,15 +128,18 @@ function SubjectCard({
   open,
   loading,
   slotsCount,
+  futureSlotCount,
   onToggle,
 }: {
   subject: SubjectRow;
   open: boolean;
   loading: boolean;
+  /** Upcoming slots shown in panel (matches cards). */
   slotsCount: number;
+  /** After fetch: count of upcoming slots only; before fetch: null (don’t use API totals — they include past). */
+  futureSlotCount: number | null;
   onToggle: () => void;
 }) {
-  const slots = subject.availableSlotsCount ?? 0;
   const tutors = subject.availableTutorsCount ?? 0;
 
   return (
@@ -136,7 +164,9 @@ function SubjectCard({
               </CardTitle>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <Badge className="bg-primary/10 text-primary border border-primary/20">
-                  {slots} slots
+                  {futureSlotCount !== null
+                    ? `${futureSlotCount} upcoming`
+                    : "Slots"}
                 </Badge>
                 <Badge variant="outline" className="gap-1">
                   <Users className="size-3.5" />
@@ -205,7 +235,6 @@ export function PublicCategoriesCatalog() {
     try {
       const slots = await listPublicAvailabilitySlotsBySubject({
         subjectId: subject.id,
-        status: "available",
       });
       setSlotsBySubject((prev) => ({ ...prev, [subject.id]: slots }));
     } catch {
@@ -244,7 +273,8 @@ export function PublicCategoriesCatalog() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Categories</h1>
           <p className="text-muted-foreground text-sm">
-            Pick a subject to see all available tutor slots.
+            Pick a subject to see upcoming slots — open ones can be booked;
+            booked times are shown for reference.
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -274,14 +304,18 @@ export function PublicCategoriesCatalog() {
                   {category.subjects.map((subject) => {
                     const open = openSubjectId === subject.id;
                     const loading = loadingSubjectId === subject.id;
+                    const fetched = slotsBySubject[subject.id] !== undefined;
                     const slots = slotsBySubject[subject.id] ?? null;
+                    const upcomingCount =
+                      slots?.filter(isSlotSessionInFuture).length ?? 0;
                     return (
                       <SubjectCard
                         key={subject.id}
                         subject={subject}
                         open={open}
                         loading={loading}
-                        slotsCount={slots?.length ?? 0}
+                        slotsCount={upcomingCount}
+                        futureSlotCount={fetched ? upcomingCount : null}
                         onToggle={() =>
                           void onToggleSubject(category.id, subject)
                         }
@@ -298,6 +332,14 @@ export function PublicCategoriesCatalog() {
 
                   const loading = loadingSubjectId === openSubject.id;
                   const slots = slotsBySubject[openSubject.id] ?? null;
+                  const upcomingSlots =
+                    slots?.filter(isSlotSessionInFuture) ?? [];
+                  const openCount = upcomingSlots.filter(
+                    (s) => s.status === "available",
+                  ).length;
+                  const bookedCount = upcomingSlots.filter(
+                    (s) => s.status === "booked",
+                  ).length;
 
                   return (
                     <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
@@ -310,12 +352,22 @@ export function PublicCategoriesCatalog() {
                             {openSubject.name}
                           </p>
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary border border-primary/20"
-                        >
-                          {(slots ?? []).length} available
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-primary/10 text-primary border border-primary/20"
+                          >
+                            {openCount} open
+                          </Badge>
+                          {bookedCount > 0 ? (
+                            <Badge
+                              variant="outline"
+                              className="border-amber-600/50 bg-amber-500/10 text-amber-900 dark:border-amber-500/40 dark:text-amber-100"
+                            >
+                              {bookedCount} booked
+                            </Badge>
+                          ) : null}
+                        </div>
                       </div>
 
                       {loading ? (
@@ -325,15 +377,15 @@ export function PublicCategoriesCatalog() {
                           <Skeleton className="h-28 w-full" />
                           <Skeleton className="h-28 w-full" />
                         </div>
-                      ) : slots && slots.length > 0 ? (
+                      ) : upcomingSlots.length > 0 ? (
                         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                          {slots.map((slot) => (
+                          {upcomingSlots.map((slot) => (
                             <SlotCard key={slot.id} slot={slot} />
                           ))}
                         </div>
                       ) : (
                         <p className="text-muted-foreground text-sm">
-                          No available slots for this subject right now.
+                          No upcoming slots for this subject right now.
                         </p>
                       )}
                     </div>

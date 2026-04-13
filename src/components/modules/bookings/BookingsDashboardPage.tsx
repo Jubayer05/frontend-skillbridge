@@ -4,21 +4,21 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { ReviewModal } from "@/components/reviews/ReviewModal";
+import { ReviewModal } from "@/components/modules/reviews/ReviewModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth-context";
+import { formatSlotTitle } from "@/lib/slot-display";
+import { cn } from "@/lib/utils";
 import {
   cancelBooking,
   completeBooking,
   listBookings,
 } from "@/services/bookings";
-import { formatSlotTitle } from "@/lib/slot-display";
-import type { Review } from "@/types/review";
 import type { Booking, BookingStatus } from "@/types/booking";
-import { cn } from "@/lib/utils";
+import type { Review } from "@/types/review";
 
 function statusLabel(status: BookingStatus) {
   if (status === "confirmed") return "Confirmed";
@@ -51,18 +51,18 @@ function BookingCard({
   onChanged: (next: Booking) => void;
 }) {
   const tutorName = booking.tutor?.name ?? "Tutor";
-  const tutorImage = booking.tutor?.profileImageUrl ?? booking.tutor?.image ?? null;
+  const tutorImage =
+    booking.tutor?.profileImageUrl ?? booking.tutor?.image ?? null;
   const subjectName = booking.subject?.name ?? "Subject";
   const categoryName = booking.subject?.category?.name ?? "Category";
 
   const canCancel =
-    booking.status === "confirmed" && (role === "STUDENT" || role === "TUTOR" || role === "ADMIN");
+    booking.status === "confirmed" &&
+    (role === "STUDENT" || role === "TUTOR" || role === "ADMIN");
   const canComplete = booking.status === "confirmed" && role === "TUTOR";
   const reviewId = booking.reviewId ?? null;
   const canLeaveReview =
-    role === "STUDENT" &&
-    booking.status === "completed" &&
-    reviewId === null;
+    role === "STUDENT" && booking.status === "completed" && reviewId === null;
 
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -75,135 +75,145 @@ function BookingCard({
 
   return (
     <div className="min-w-0">
-    <Card className="border-border/60 bg-card/50">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle className="text-base font-semibold leading-snug">
-              {formatSlotTitle({
-                name: booking.slotName,
-                date: booking.date,
-                startTime: booking.startTime,
-                endTime: booking.endTime,
-              })}
-            </CardTitle>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {categoryName} ·{" "}
-              <span className="text-foreground font-medium">{subjectName}</span>
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
-              statusTone(booking.status),
-            )}
-          >
-            {statusLabel(booking.status)}
-          </span>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            {tutorImage ? (
-              <Image
-                src={tutorImage}
-                alt=""
-                width={36}
-                height={36}
-                className="size-9 rounded-full object-cover"
-              />
-            ) : (
-              <div className="bg-muted text-muted-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold">
-                {initials(tutorName)}
-              </div>
-            )}
+      <Card className="border-border/60 bg-card/50">
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{tutorName}</p>
-              <p className="text-muted-foreground truncate text-xs">
-                {booking.tutor?.headline ?? "Tutor session"}
+              <CardTitle className="text-base font-semibold leading-snug">
+                {formatSlotTitle({
+                  name: booking.slotName,
+                  date: booking.date,
+                  startTime: booking.startTime,
+                  endTime: booking.endTime,
+                })}
+              </CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {categoryName} ·{" "}
+                <span className="text-foreground font-medium">
+                  {subjectName}
+                </span>
+              </p>
+            </div>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
+                statusTone(booking.status),
+              )}
+            >
+              {statusLabel(booking.status)}
+            </span>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              {tutorImage ? (
+                <Image
+                  src={tutorImage}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="size-9 rounded-full object-cover"
+                />
+              ) : (
+                <div className="bg-muted text-muted-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold">
+                  {initials(tutorName)}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{tutorName}</p>
+                <p className="text-muted-foreground truncate text-xs">
+                  {booking.tutor?.headline ?? "Tutor session"}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <p className="text-sm font-semibold">${booking.totalPrice}</p>
+              <p className="text-muted-foreground text-xs">
+                {booking.paymentMethod === "COD"
+                  ? "Cash on delivery"
+                  : booking.paymentMethod}
               </p>
             </div>
           </div>
 
-          <div className="text-right">
-            <p className="text-sm font-semibold">${booking.totalPrice}</p>
+          {(canCancel || canComplete || canLeaveReview) && (
+            <div className="flex flex-wrap gap-2">
+              {canCancel ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    cancelBooking(booking.id)
+                      .then((next) => {
+                        toast.success("Booking cancelled");
+                        onChanged(next);
+                      })
+                      .catch((err: Error) =>
+                        toast.error(err.message ?? "Could not cancel booking"),
+                      );
+                  }}
+                >
+                  Cancel
+                </Button>
+              ) : null}
+
+              {canComplete ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    completeBooking(booking.id)
+                      .then((next) => {
+                        toast.success("Marked as completed");
+                        onChanged(next);
+                      })
+                      .catch((err: Error) =>
+                        toast.error(
+                          err.message ?? "Could not complete booking",
+                        ),
+                      );
+                  }}
+                >
+                  Mark completed
+                </Button>
+              ) : null}
+
+              {canLeaveReview ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setReviewOpen(true)}
+                >
+                  Leave feedback
+                </Button>
+              ) : null}
+            </div>
+          )}
+
+          {reviewId ? (
             <p className="text-muted-foreground text-xs">
-              {booking.paymentMethod === "COD" ? "Cash on delivery" : booking.paymentMethod}
+              You left a review for this session.
             </p>
-          </div>
-        </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
-        {(canCancel || canComplete || canLeaveReview) && (
-          <div className="flex flex-wrap gap-2">
-            {canCancel ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  cancelBooking(booking.id)
-                    .then((next) => {
-                      toast.success("Booking cancelled");
-                      onChanged(next);
-                    })
-                    .catch((err: Error) => toast.error(err.message ?? "Could not cancel booking"));
-                }}
-              >
-                Cancel
-              </Button>
-            ) : null}
-
-            {canComplete ? (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  completeBooking(booking.id)
-                    .then((next) => {
-                      toast.success("Marked as completed");
-                      onChanged(next);
-                    })
-                    .catch((err: Error) =>
-                      toast.error(err.message ?? "Could not complete booking"),
-                    );
-                }}
-              >
-                Mark completed
-              </Button>
-            ) : null}
-
-            {canLeaveReview ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setReviewOpen(true)}
-              >
-                Leave feedback
-              </Button>
-            ) : null}
-          </div>
-        )}
-
-        {reviewId ? (
-          <p className="text-muted-foreground text-xs">You left a review for this session.</p>
-        ) : null}
-      </CardContent>
-    </Card>
-
-    {canLeaveReview ? (
-      <ReviewModal
-        open={reviewOpen}
-        onOpenChange={setReviewOpen}
-        bookingId={booking.id}
-        sessionLabel={sessionLabel}
-        onSubmitted={(r: Review) => {
-          onChanged({ ...booking, reviewId: r.id });
-        }}
-      />
-    ) : null}
+      {canLeaveReview ? (
+        <ReviewModal
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          bookingId={booking.id}
+          sessionLabel={sessionLabel}
+          onSubmitted={(r: Review) => {
+            onChanged({ ...booking, reviewId: r.id });
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -239,7 +249,9 @@ export function BookingsDashboardPage() {
       })
       .catch((err: unknown) => {
         if (!active) return;
-        setError(err instanceof Error ? err.message : "Could not load bookings");
+        setError(
+          err instanceof Error ? err.message : "Could not load bookings",
+        );
         setRows([]);
       })
       .finally(() => {
@@ -341,4 +353,3 @@ export function BookingsDashboardPage() {
     </div>
   );
 }
-

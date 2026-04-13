@@ -22,5 +22,5 @@ export default async function TutorProfilePage({
     );
   }
 
-  return <TutorPublicProfile tutorUserId={userId} />;
+  return <TutorPublicProfile key={userId} tutorUserId={userId} />;
 }

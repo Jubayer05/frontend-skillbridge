@@ -1,7 +1,6 @@
 "use client";
 
 import { TutorDiscoveryCard } from "@/components/tutor/TutorCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,12 +12,16 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/hooks/useCategories";
+import { cn } from "@/lib/utils";
 import { listTutors } from "@/services/tutorsBrowse";
-import type { PaginatedTutorList, TutorBrowseSort } from "@/types/tutor-discovery";
-import { LayoutGrid, List } from "lucide-react";
+import type {
+  PaginatedTutorList,
+  TutorBrowseSort,
+} from "@/types/tutor-discovery";
+import { LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 function parseNum(s: string | null): number | undefined {
@@ -27,23 +30,43 @@ function parseNum(s: string | null): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+const SORT_OPTIONS: { value: TutorBrowseSort; label: string }[] = [
+  { value: "rating_desc", label: "Rating: high to low" },
+  { value: "price_asc", label: "Price: low to high" },
+  { value: "price_desc", label: "Price: high to low" },
+  { value: "newest", label: "Newest profiles" },
+];
+
+const RATING_OPTIONS = [
+  { value: "any", label: "Any" },
+  { value: "3", label: "3+ ★" },
+  { value: "4", label: "4+ ★" },
+  { value: "4.5", label: "4.5+ ★" },
+];
+
 export function TutorsBrowsePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { categories, loading: catLoading } = useCategories();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [data, setData] = useState<PaginatedTutorList | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const page = Math.max(1, parseNum(searchParams.get("page")) ?? 1);
-  const limit = Math.min(48, Math.max(1, parseNum(searchParams.get("limit")) ?? 12));
+  const limit = Math.min(
+    48,
+    Math.max(1, parseNum(searchParams.get("limit")) ?? 12),
+  );
   const categoryId = searchParams.get("categoryId") ?? "";
   const minPrice = parseNum(searchParams.get("minPrice"));
   const maxPrice = parseNum(searchParams.get("maxPrice"));
   const minRating = parseNum(searchParams.get("minRating"));
   const q = searchParams.get("q") ?? "";
-  const sort = (searchParams.get("sort") as TutorBrowseSort | null) ?? "rating_desc";
+  const sort =
+    (searchParams.get("sort") as TutorBrowseSort | null) ?? "rating_desc";
 
   const validSort: TutorBrowseSort =
     sort === "price_asc" ||
@@ -73,16 +96,7 @@ export function TutorsBrowsePage() {
     } finally {
       setLoading(false);
     }
-  }, [
-    page,
-    limit,
-    categoryId,
-    minPrice,
-    maxPrice,
-    minRating,
-    q,
-    validSort,
-  ]);
+  }, [page, limit, categoryId, minPrice, maxPrice, minRating, q, validSort]);
 
   useEffect(() => {
     void load();
@@ -98,262 +112,500 @@ export function TutorsBrowsePage() {
     router.push(`/tutors?${p.toString()}`);
   };
 
+  const hasActiveFilters = !!(
+    categoryId ||
+    minPrice ||
+    maxPrice ||
+    minRating ||
+    q
+  );
+
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Find a tutor</h1>
-        <p className="text-muted-foreground mt-2 text-sm md:text-base">
-          Browse verified instructors, filter by subject area, price, and rating.
-        </p>
-      </div>
+    <div className="bg-[#f8f7f4] font-sans">
+      {/* ── Main layout ── */}
+      <div className="mx-auto flex max-w-7xl items-start gap-6 px-4 py-8 md:px-6">
+        {/* Mobile filter toggle */}
+        <button
+          className="md:hidden flex items-center gap-2 text-[13px] font-medium text-[#0f1f3d] border border-[#e4e1d8] bg-white px-4 py-2 rounded-lg mb-4 self-start"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <SlidersHorizontal className="size-4" />
+          Filters
+          {hasActiveFilters && (
+            <span className="bg-[#0f1f3d] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+              !
+            </span>
+          )}
+        </button>
 
-      <div className="flex flex-col gap-8 lg:flex-row">
-        <aside className="lg:w-72 lg:shrink-0">
-          <div className="bg-card space-y-5 rounded-xl border border-border/60 p-4 md:p-5">
-            <h2 className="font-semibold">Filters</h2>
-
-            <div className="space-y-2">
-              <Label htmlFor="tutor-q">Search</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="tutor-q"
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Name or headline"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const v = (e.target as HTMLInputElement).value;
-                      pushFilters({ q: v || undefined });
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    const el = document.getElementById(
-                      "tutor-q",
-                    ) as HTMLInputElement | null;
-                    pushFilters({ q: el?.value?.trim() || undefined });
-                  }}
+        {/* ── Sidebar ── */}
+        <aside
+          className={cn(
+            "sticky top-4 w-64 shrink-0 transition-all md:top-24",
+            "hidden md:block",
+            sidebarOpen &&
+              "!block fixed inset-0 z-40 w-full md:relative md:w-64",
+          )}
+        >
+          {sidebarOpen && (
+            <div
+              className="absolute inset-0 bg-black/40 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+          <div
+            className={cn(
+              "bg-white rounded-xl border border-[#e4e1d8] overflow-hidden",
+              sidebarOpen &&
+                "relative z-10 max-w-72 h-screen overflow-y-auto md:h-auto",
+            )}
+          >
+            {/* Header */}
+            <div className="px-4 py-3.5 border-b border-[#eeede8] flex items-center justify-between">
+              <span className="text-[11px] tracking-[0.1em] uppercase text-[#8896a8] font-medium">
+                Filters
+              </span>
+              <div className="flex items-center gap-3">
+                {hasActiveFilters && (
+                  <button
+                    onClick={() => router.push("/tutors")}
+                    className="text-[11px] text-amber-600 font-medium uppercase tracking-wider hover:text-amber-700"
+                  >
+                    Clear all
+                  </button>
+                )}
+                <button
+                  className="md:hidden"
+                  onClick={() => setSidebarOpen(false)}
                 >
-                  Go
-                </Button>
+                  <X className="size-4 text-[#8896a8]" />
+                </button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={categoryId || "all"}
-                disabled={catLoading}
-                onValueChange={(v) =>
-                  pushFilters({ categoryId: v === "all" ? undefined : v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
+            {/* Category */}
+            <div className="px-4 py-4 border-b border-[#eeede8]">
+              <Label className="text-[11px] tracking-[0.08em] uppercase text-[#8896a8] font-medium mb-2 block">
+                Category
+              </Label>
+              {catLoading ? (
+                <div className="space-y-1.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-7 rounded-md" />
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              ) : (
+                <div className="space-y-0.5">
+                  <button
+                    onClick={() => pushFilters({ categoryId: undefined })}
+                    className={cn(
+                      "w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] transition-colors",
+                      !categoryId
+                        ? "bg-[#edf2ff] text-[#1a3260] font-medium"
+                        : "text-[#4a5568] hover:bg-[#f8f7f4]",
+                    )}
+                  >
+                    All subjects
+                  </button>
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => pushFilters({ categoryId: c.id })}
+                      className={cn(
+                        "w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] transition-colors",
+                        categoryId === c.id
+                          ? "bg-[#edf2ff] text-[#1a3260] font-medium"
+                          : "text-[#4a5568] hover:bg-[#f8f7f4]",
+                      )}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="min-p">Min $/hr</Label>
-                <Input
-                  id="min-p"
-                  type="number"
-                  min={0}
-                  step={1}
-                  defaultValue={minPrice ?? ""}
-                  onBlur={(e) => {
-                    const v = e.target.value;
-                    pushFilters({
-                      minPrice: v === "" ? undefined : v,
-                    });
-                  }}
-                />
+            {/* Price range */}
+            <div className="px-4 py-4 border-b border-[#eeede8]">
+              <Label className="text-[11px] tracking-[0.08em] uppercase text-[#8896a8] font-medium mb-2 block">
+                Price per hour
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide text-[#8896a8] font-medium mb-1">
+                    Min $
+                  </p>
+                  <Input
+                    type="number"
+                    min={0}
+                    defaultValue={minPrice ?? ""}
+                    placeholder="0"
+                    className="h-8 text-[13px] border-[#e4e1d8]"
+                    onBlur={(e) =>
+                      pushFilters({ minPrice: e.target.value || undefined })
+                    }
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide text-[#8896a8] font-medium mb-1">
+                    Max $
+                  </p>
+                  <Input
+                    type="number"
+                    min={0}
+                    defaultValue={maxPrice ?? ""}
+                    placeholder="Any"
+                    className="h-8 text-[13px] border-[#e4e1d8]"
+                    onBlur={(e) =>
+                      pushFilters({ maxPrice: e.target.value || undefined })
+                    }
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="max-p">Max $/hr</Label>
-                <Input
-                  id="max-p"
-                  type="number"
-                  min={0}
-                  step={1}
-                  defaultValue={maxPrice ?? ""}
-                  onBlur={(e) => {
-                    const v = e.target.value;
-                    pushFilters({
-                      maxPrice: v === "" ? undefined : v,
-                    });
-                  }}
-                />
+            </div>
+
+            {/* Min rating */}
+            <div className="px-4 py-4">
+              <Label className="text-[11px] tracking-[0.08em] uppercase text-[#8896a8] font-medium mb-2 block">
+                Minimum rating
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                {RATING_OPTIONS.map((opt) => {
+                  const active =
+                    opt.value === "any"
+                      ? minRating == null
+                      : String(minRating) === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() =>
+                        pushFilters({
+                          minRating:
+                            opt.value === "any" ? undefined : opt.value,
+                        })
+                      }
+                      className={cn(
+                        "px-3 py-1 rounded-full border text-[12px] transition-all",
+                        active
+                          ? "bg-[#0f1f3d] border-[#0f1f3d] text-white font-medium"
+                          : "bg-white border-[#e4e1d8] text-[#4a5568] hover:border-[#0f1f3d]",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Min rating</Label>
-              <Select
-                value={
-                  minRating != null ? String(minRating) : "any"
-                }
-                onValueChange={(v) =>
-                  pushFilters({
-                    minRating: v === "any" ? undefined : v,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="3">3+ stars</SelectItem>
-                  <SelectItem value="4">4+ stars</SelectItem>
-                  <SelectItem value="4.5">4.5+ stars</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Sort by</Label>
-              <Select
-                value={validSort}
-                onValueChange={(v) =>
-                  pushFilters({ sort: v as TutorBrowseSort })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rating_desc">Rating (high to low)</SelectItem>
-                  <SelectItem value="price_asc">Price (low to high)</SelectItem>
-                  <SelectItem value="price_desc">Price (high to low)</SelectItem>
-                  <SelectItem value="newest">Newest profiles</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => router.push("/tutors")}
-            >
-              Clear filters
-            </Button>
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              {loading
-                ? "Loading…"
-                : data
-                  ? `${data.total} tutor${data.total === 1 ? "" : "s"} found`
-                  : ""}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
+        {/* ── Content ── */}
+        <div className="min-w-0 flex-1">
+          {/* Search + toolbar */}
+          <div className="mb-5 flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 overflow-hidden rounded-lg border border-[#e4e1d8] bg-white shadow-sm">
+              <input
+                ref={searchInputRef}
+                type="search"
+                defaultValue={q}
+                placeholder="Search by name, subject, or keyword…"
+                className="placeholder:text-muted-foreground h-10 min-w-0 flex-1 border-0 bg-transparent px-3 text-[13.5px] text-[#0f1f3d] outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    pushFilters({
+                      q: (e.target as HTMLInputElement).value || undefined,
+                    });
+                  }
+                }}
+              />
+              <button
                 type="button"
-                size="icon"
-                variant={view === "grid" ? "secondary" : "ghost"}
-                aria-label="Grid view"
-                onClick={() => setView("grid")}
+                onClick={() =>
+                  pushFilters({
+                    q: searchInputRef.current?.value?.trim() || undefined,
+                  })
+                }
+                className="flex shrink-0 items-center gap-2 bg-amber-400 px-4 text-[13px] font-medium text-[#0f1f3d] transition-colors hover:bg-amber-300"
               >
-                <LayoutGrid className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant={view === "list" ? "secondary" : "ghost"}
-                aria-label="List view"
-                onClick={() => setView("list")}
-              >
-                <List className="size-4" />
-              </Button>
+                <Search className="size-4" />
+                <span className="hidden sm:inline">Search</span>
+              </button>
             </div>
           </div>
 
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[13px] text-[#4a5568]">
+              {loading ? (
+                <span className="text-[#8896a8]">Loading…</span>
+              ) : data ? (
+                <>
+                  <span className="font-medium text-[#0f1f3d]">
+                    {data.total}
+                  </span>{" "}
+                  tutor{data.total === 1 ? "" : "s"} found
+                </>
+              ) : null}
+            </p>
+
+            <div className="flex items-center gap-2.5">
+              {/* Sort */}
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] text-[#8896a8] whitespace-nowrap hidden sm:block">
+                  Sort by
+                </span>
+                <Select
+                  value={validSort}
+                  onValueChange={(v) =>
+                    pushFilters({ sort: v as TutorBrowseSort })
+                  }
+                >
+                  <SelectTrigger className="h-8 text-[12.5px] border-[#e4e1d8] bg-white w-auto min-w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((o) => (
+                      <SelectItem
+                        key={o.value}
+                        value={o.value}
+                        className="text-[13px]"
+                      >
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* View toggle */}
+              <div className="flex border border-[#e4e1d8] rounded-lg overflow-hidden bg-white">
+                <button
+                  onClick={() => setView("grid")}
+                  aria-label="Grid view"
+                  className={cn(
+                    "w-8 h-8 flex items-center justify-center transition-colors",
+                    view === "grid" ? "bg-[#0f1f3d]" : "hover:bg-[#f8f7f4]",
+                  )}
+                >
+                  <LayoutGrid
+                    className={cn(
+                      "size-3.5",
+                      view === "grid" ? "text-white" : "text-[#8896a8]",
+                    )}
+                  />
+                </button>
+                <button
+                  onClick={() => setView("list")}
+                  aria-label="List view"
+                  className={cn(
+                    "w-8 h-8 flex items-center justify-center transition-colors",
+                    view === "list" ? "bg-[#0f1f3d]" : "hover:bg-[#f8f7f4]",
+                  )}
+                >
+                  <List
+                    className={cn(
+                      "size-3.5",
+                      view === "list" ? "text-white" : "text-[#8896a8]",
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Active filter chips */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {q && (
+                <FilterChip
+                  label={`"${q}"`}
+                  onRemove={() => pushFilters({ q: undefined })}
+                />
+              )}
+              {categoryId && (
+                <FilterChip
+                  label={
+                    categories.find((c) => c.id === categoryId)?.name ??
+                    categoryId
+                  }
+                  onRemove={() => pushFilters({ categoryId: undefined })}
+                />
+              )}
+              {minPrice != null && (
+                <FilterChip
+                  label={`Min $${minPrice}`}
+                  onRemove={() => pushFilters({ minPrice: undefined })}
+                />
+              )}
+              {maxPrice != null && (
+                <FilterChip
+                  label={`Max $${maxPrice}`}
+                  onRemove={() => pushFilters({ maxPrice: undefined })}
+                />
+              )}
+              {minRating != null && (
+                <FilterChip
+                  label={`${minRating}+ stars`}
+                  onRemove={() => pushFilters({ minRating: undefined })}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Cards */}
           {loading && !data ? (
             <div
               className={
                 view === "grid"
-                  ? "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
-                  : "space-y-4"
+                  ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                  : "space-y-3"
               }
             >
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-80 rounded-xl" />
+                <Skeleton
+                  key={i}
+                  className={
+                    view === "grid" ? "h-80 rounded-xl" : "h-24 rounded-xl"
+                  }
+                />
               ))}
             </div>
           ) : data?.items.length === 0 ? (
-            <p className="text-muted-foreground py-12 text-center text-sm">
-              No tutors match your filters.{" "}
-              <Link href="/tutors" className="text-primary underline">
-                Reset
+            <div className="py-20 text-center">
+              <p className="text-[#8896a8] text-[15px] mb-1">
+                No tutors match your filters.
+              </p>
+              <Link
+                href="/tutors"
+                className="text-[13px] text-amber-600 underline underline-offset-2"
+              >
+                Reset all filters
               </Link>
-            </p>
+            </div>
           ) : view === "grid" ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {data?.items.map((t) => (
                 <TutorDiscoveryCard key={t.id} tutor={t} variant="grid" />
               ))}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {data?.items.map((t) => (
                 <TutorDiscoveryCard key={t.id} tutor={t} variant="list" />
               ))}
             </div>
           )}
 
-          {data && data.totalPages > 1 ? (
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || loading}
+          {/* Pagination */}
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1.5 pt-8 mt-6 border-t border-[#eeede8]">
+              <PaginationButton
                 onClick={() => {
                   const p = new URLSearchParams(searchParams.toString());
                   p.set("page", String(page - 1));
                   router.push(`/tutors?${p.toString()}`);
                 }}
+                disabled={page <= 1 || loading}
+                aria-label="Previous page"
               >
-                Previous
-              </Button>
-              <span className="text-muted-foreground text-sm tabular-nums">
+                ←
+              </PaginationButton>
+
+              {Array.from({ length: Math.min(data.totalPages, 5) }, (_, i) => {
+                const pg = i + 1;
+                return (
+                  <PaginationButton
+                    key={pg}
+                    active={pg === page}
+                    onClick={() => {
+                      const p = new URLSearchParams(searchParams.toString());
+                      p.set("page", String(pg));
+                      router.push(`/tutors?${p.toString()}`);
+                    }}
+                    disabled={loading}
+                  >
+                    {pg}
+                  </PaginationButton>
+                );
+              })}
+
+              {data.totalPages > 5 && (
+                <span className="text-[13px] text-[#8896a8] px-2">…</span>
+              )}
+
+              <span className="text-[12px] text-[#8896a8] px-3 tabular-nums">
                 Page {page} of {data.totalPages}
               </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= data.totalPages || loading}
+
+              <PaginationButton
                 onClick={() => {
                   const p = new URLSearchParams(searchParams.toString());
                   p.set("page", String(page + 1));
                   router.push(`/tutors?${p.toString()}`);
                 }}
+                disabled={page >= data.totalPages || loading}
+                aria-label="Next page"
               >
-                Next
-              </Button>
+                →
+              </PaginationButton>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Small helpers ──────────────────────────────────────────────
+
+function FilterChip({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 bg-[#edf2ff] text-[#1a3260] text-[12px] font-medium px-3 py-1 rounded-full border border-[#c7d4f8]">
+      {label}
+      <button
+        onClick={onRemove}
+        className="hover:text-red-500 transition-colors"
+        aria-label={`Remove filter: ${label}`}
+      >
+        <X className="size-3" />
+      </button>
+    </span>
+  );
+}
+
+function PaginationButton({
+  children,
+  active,
+  disabled,
+  onClick,
+  "aria-label": ariaLabel,
+}: {
+  children: React.ReactNode;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  "aria-label"?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={cn(
+        "w-8 h-8 rounded-lg border text-[13px] font-medium transition-all flex items-center justify-center",
+        active
+          ? "bg-[#0f1f3d] border-[#0f1f3d] text-white shadow-sm"
+          : "bg-white border-[#e4e1d8] text-[#4a5568] hover:border-[#0f1f3d] hover:text-[#0f1f3d]",
+        disabled && "opacity-35 cursor-not-allowed pointer-events-none",
+      )}
+    >
+      {children}
+    </button>
   );
 }

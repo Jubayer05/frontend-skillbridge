@@ -1,4 +1,4 @@
-import { CategorySubjectSlots } from "@/components/category/CategorySubjectSlots";
+import { CategorySubjectSlots } from "@/components/modules/category/CategorySubjectSlots";
 
 function paramId(value: string | string[] | undefined): string {
   if (typeof value === "string") return value;

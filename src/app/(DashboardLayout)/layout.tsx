@@ -1,6 +1,6 @@
 "use client";
 
-import { SiteHeader } from "@/components/dashboard/site-header";
+import { SiteHeader } from "@/components/shared/dashboard/site-header";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {

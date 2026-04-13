@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryForm from "@/components/category/CategoryForm";
+import CategoryForm from "@/components/modules/category/CategoryForm";
 import { createCategory } from "@/services/categoryService";
 import type {
   CreateCategoryPayload,

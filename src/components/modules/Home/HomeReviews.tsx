@@ -7,11 +7,24 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
-import { Quote, Star } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 
 const RANDOMUSER_BASE = "https://randomuser.me/api/portraits";
+
+const accentColors = [
+  "from-violet-600 to-violet-400",
+  "from-teal-600 to-teal-400",
+  "from-orange-600 to-orange-400",
+  "from-blue-600 to-blue-400",
+];
+
+const starColors = [
+  "fill-violet-500 text-violet-500",
+  "fill-teal-500 text-teal-500",
+  "fill-orange-500 text-orange-500",
+  "fill-blue-500 text-blue-500",
+];
 
 const defaultReviews = [
   {
@@ -43,7 +56,7 @@ const defaultReviews = [
     name: "James Okonkwo",
     role: "Freelance Writer",
     avatar: `${RANDOMUSER_BASE}/men/67.jpg`,
-    text: "The writing and storytelling courses connected me with editors and authors who gave me actionable feedback. My portfolio improved dramatically.",
+    text: "The writing and storytelling courses connected me with editors who gave me actionable feedback. My portfolio improved dramatically.",
     rating: 5,
   },
 ];
@@ -65,104 +78,105 @@ interface HomeReviewsProps {
   className?: string;
 }
 
-const AUTOPLAY_DELAY_MS = 5000;
-
 export function HomeReviews({
-  title = "What learners are saying",
+  title = "What learners are saying.",
   description = "Real stories from people who built new skills and grew their careers on SkillBridge.",
   reviews = defaultReviews,
-  autoplayDelay = AUTOPLAY_DELAY_MS,
+  autoplayDelay = 5000,
   className,
 }: HomeReviewsProps) {
   const [api, setApi] = React.useState<CarouselApi | null>(null);
 
   React.useEffect(() => {
     if (!api) return;
-    const interval = setInterval(() => {
-      api.scrollNext();
-    }, autoplayDelay);
+    const interval = setInterval(() => api.scrollNext(), autoplayDelay);
     return () => clearInterval(interval);
   }, [api, autoplayDelay]);
 
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 px-6 py-12 shadow-sm backdrop-blur-sm sm:px-10 sm:py-16 md:px-14",
+        "overflow-hidden rounded-2xl border border-border/50 bg-background px-6 py-12 sm:px-10 sm:py-14",
         className,
       )}
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-30"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% -20%, var(--primary / 0.08), transparent)",
-        }}
-      />
-
-      <div className="container relative mx-auto max-w-4xl">
-        <div className="mb-10 text-center sm:mb-12">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-            {title}
-          </h2>
-          {description && (
-            <p className="mx-auto mt-4 max-w-xl text-muted-foreground sm:text-lg">
-              {description}
-            </p>
-          )}
-        </div>
-
-        <Carousel
-          opts={{
-            loop: true,
-            align: "start",
-            skipSnaps: false,
-          }}
-          setApi={setApi}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 sm:-ml-4">
-            {reviews.map((review) => (
-              <CarouselItem
-                key={review.id}
-                className="min-w-0 basis-full pl-2 sm:pl-4 md:basis-1/2 lg:basis-1/3"
-              >
-                <div className="relative rounded-xl border border-border/60 bg-background/80 p-6 shadow-sm transition-colors hover:border-border hover:bg-background/90 sm:p-8">
-                  <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/20 sm:h-10 sm:w-10" />
-                  <div className="mb-4 flex gap-1">
-                    {Array.from({ length: review.rating }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-primary text-primary sm:h-5 sm:w-5"
-                        aria-hidden
-                      />
-                    ))}
-                  </div>
-                  <blockquote className="text-base text-foreground sm:text-lg">
-                    &ldquo;{review.text}&rdquo;
-                  </blockquote>
-                  <footer className="mt-5 flex items-center gap-3 sm:mt-6">
-                    <Image
-                      src={review.avatar ?? `${RANDOMUSER_BASE}/men/1.jpg`}
-                      alt=""
-                      className="size-10 shrink-0 rounded-full object-cover ring-2 ring-border sm:size-12"
-                      width={48}
-                      height={48}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <cite className="not-italic font-semibold text-foreground">
-                        {review.name}
-                      </cite>
-                      <span className="block text-sm text-muted-foreground">
-                        {review.role}
-                      </span>
-                    </div>
-                  </footer>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+      <div className="text-center mb-10">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-100 px-3 py-1 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 mb-4">
+          Learner stories
+        </span>
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          {title}
+        </h2>
+        {description && (
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground sm:text-lg">
+            {description}
+          </p>
+        )}
       </div>
+
+      <Carousel
+        opts={{ loop: true, align: "start" }}
+        setApi={setApi}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-4">
+          {reviews.map((review, i) => (
+            <CarouselItem
+              key={review.id}
+              className="pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+            >
+              <div className="relative rounded-xl border border-border/60 bg-background p-6 h-full flex flex-col overflow-hidden">
+                {/* Top color bar */}
+                <div
+                  className={cn(
+                    "absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r",
+                    accentColors[i % accentColors.length],
+                  )}
+                />
+
+                {/* Star row */}
+                <div className="flex gap-1 mb-4 mt-1">
+                  {Array.from({ length: review.rating }).map((_, j) => (
+                    <svg
+                      key={j}
+                      className={cn(
+                        "size-4",
+                        starColors[i % starColors.length],
+                      )}
+                      viewBox="0 0 20 20"
+                      aria-hidden
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+
+                <blockquote className="flex-1 text-sm text-foreground leading-relaxed mb-5">
+                  &ldquo;{review.text}&rdquo;
+                </blockquote>
+
+                <footer className="flex items-center gap-3">
+                  <Image
+                    src={review.avatar ?? `${RANDOMUSER_BASE}/men/1.jpg`}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="size-10 rounded-full object-cover ring-2 ring-border"
+                  />
+                  <div>
+                    <cite className="not-italic text-sm font-semibold text-foreground">
+                      {review.name}
+                    </cite>
+                    <span className="block text-xs text-muted-foreground">
+                      {review.role}
+                    </span>
+                  </div>
+                </footer>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 }

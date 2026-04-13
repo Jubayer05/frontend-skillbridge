@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryForm from "@/components/category/CategoryForm";
+import CategoryForm from "@/components/modules/category/CategoryForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategoryById } from "@/hooks/useCategories";
 import { updateCategory } from "@/services/categoryService";

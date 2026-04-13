@@ -8,6 +8,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  DashboardHero,
+  DashboardPageShell,
+} from "@/components/modules/profile/dashboard-page-shell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -142,49 +146,50 @@ export function StudentProfileForm() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-[520px] w-full" />
-      </div>
+      <DashboardPageShell maxWidth="narrow">
+        <div className="space-y-6">
+          <Skeleton className="h-36 w-full rounded-2xl" />
+          <Skeleton className="h-[520px] w-full rounded-xl" />
+        </div>
+      </DashboardPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 md:p-6">
-        <Card>
+      <DashboardPageShell maxWidth="narrow">
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
           <CardHeader>
             <CardTitle>Unable to load profile</CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </DashboardPageShell>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Student profile</CardTitle>
-          <CardDescription>
-            Manage your personal details and the information visible on your
-            account.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <DashboardPageShell maxWidth="narrow">
+      <div className="space-y-8">
+        <DashboardHero
+          eyebrow="Your account"
+          title="Student profile"
+          description="Manage the details tutors see and keep your contact information up to date."
+        />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit profile</CardTitle>
-          <CardDescription>
-            Keep your profile current so tutors can contact and support you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="flex flex-col gap-4 rounded-xl border p-4 md:flex-row md:items-center">
-              <div className="relative h-24 w-24 overflow-hidden rounded-full border bg-muted">
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="font-serif text-xl text-[#0f1f3d]">
+              Edit profile
+            </CardTitle>
+            <CardDescription>
+              Photo, name, phone, and bio—saved securely to your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex flex-col gap-4 rounded-xl border border-[#e4e1d8] bg-[#faf9f6] p-4 md:flex-row md:items-center">
+              <div className="relative h-24 w-24 overflow-hidden rounded-full border border-[#e4e1d8] bg-white shadow-sm">
                 {previewImage ? (
                   <Image
                     src={previewImage}
@@ -290,11 +295,12 @@ export function StudentProfileForm() {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end gap-3 border-t border-[#e4e1d8] pt-6">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
+                className="border-[#e4e1d8]"
                 onClick={() =>
                   reset({
                     name: profile?.name ?? "",
@@ -306,7 +312,11 @@ export function StudentProfileForm() {
               >
                 Reset
               </Button>
-              <Button type="submit" disabled={isSubmitting || !isDirty}>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isDirty}
+                className="bg-amber-500 text-[#0f1f3d] hover:bg-amber-400"
+              >
                 {isSubmitting && (
                   <LoaderCircle className="size-4 animate-spin" />
                 )}
@@ -316,6 +326,7 @@ export function StudentProfileForm() {
           </form>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </DashboardPageShell>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { StaticStars } from "@/components/reviews/StarRating";
+import { StaticStars } from "@/components/modules/reviews/StarRating";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,7 @@ export function TutorDiscoveryCard({
 
   if (variant === "list") {
     return (
-      <Card className="border-border/60 overflow-hidden">
+      <Card className="border-border/60 overflow-hidden pt-0">
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-stretch">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -100,7 +100,7 @@ export function TutorDiscoveryCard({
   }
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden border-border/60 transition-shadow hover:shadow-md">
+    <Card className="group pt-0 flex h-full flex-col overflow-hidden border-border/60 transition-shadow hover:shadow-md">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted/50">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -148,7 +148,9 @@ export function TutorDiscoveryCard({
           {r != null ? (
             <span className="flex items-center gap-1.5">
               <StaticStars value={r} />
-              <span className="text-foreground font-medium">{tutor.rating}</span>
+              <span className="text-foreground font-medium">
+                {tutor.rating}
+              </span>
               <span>({tutor.totalReviews})</span>
             </span>
           ) : (

@@ -1,6 +1,5 @@
-import PublicCategoriesCatalogPage from "@/views/public/PublicCategoriesCatalogPage";
+import { PublicCategoriesCatalog } from "@/components/modules/category/PublicCategoriesCatalog";
 
 export default function Page() {
-  return <PublicCategoriesCatalogPage />;
+  return <PublicCategoriesCatalog />;
 }
-

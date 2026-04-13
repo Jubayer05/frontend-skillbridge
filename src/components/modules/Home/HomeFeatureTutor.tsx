@@ -20,14 +20,14 @@ const MAX_VISIBLE_TUTORS = 8;
 
 function FeatureTutorGridSkeleton({ count }: { count: number }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4">
+    <div className="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
           className="flex flex-col overflow-hidden rounded-xl border border-border/60"
         >
-          <Skeleton className="aspect-4/3 w-full rounded-none" />
-          <div className="space-y-3 p-4 sm:p-5">
+          <Skeleton className="aspect-5/4 w-full rounded-none" />
+          <div className="space-y-3 p-5 sm:p-6">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-10 w-full" />
@@ -53,6 +53,19 @@ interface HomeFeatureTutorProps {
   viewMoreLabel?: string;
   className?: string;
 }
+
+const accentGradients: Record<number, string> = {
+  0: "from-violet-600 to-violet-400",
+  1: "from-teal-600 to-teal-400",
+  2: "from-orange-600 to-orange-400",
+  3: "from-blue-600 to-blue-400",
+};
+const subjectColors: Record<number, string> = {
+  0: "text-violet-600 dark:text-violet-400",
+  1: "text-teal-600 dark:text-teal-400",
+  2: "text-orange-600 dark:text-orange-400",
+  3: "text-blue-600 dark:text-blue-400",
+};
 
 export function HomeFeatureTutor({
   title = "Featured tutors",
@@ -133,7 +146,7 @@ export function HomeFeatureTutor({
         }}
       />
 
-      <div className="container relative mx-auto max-w-5xl">
+      <div className="container relative mx-auto max-w-6xl">
         <div className="mb-10 text-center sm:mb-12">
           <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
             {title}
@@ -158,31 +171,39 @@ export function HomeFeatureTutor({
             No tutors to show.
           </p>
         ) : (
-          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {visibleTutors.map((tutor) => {
+          <div className="grid gap-8 sm:gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {visibleTutors.map((tutor, idx) => {
               const cardClassName =
                 "group flex flex-col rounded-xl border border-border/60 bg-background/80 shadow-sm transition-colors hover:border-border hover:bg-background hover:shadow-md focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none";
               const inner = (
                 <>
-                  <div className="relative aspect-4/3 w-full overflow-hidden rounded-t-xl bg-muted/50">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- dynamic tutor / CDN URLs */}
+                  <div className="relative aspect-5/4 w-full overflow-hidden rounded-t-xl bg-muted/50">
                     <img
                       src={tutor.avatar}
                       alt=""
                       className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
+                    {/* Gradient bar at bottom of image */}
+                    <div
+                      className={cn(
+                        "absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r",
+                        accentGradients[idx % 4],
+                      )}
+                    />
                   </div>
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <h3 className="font-semibold text-foreground sm:text-lg">
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <h3 className="text-base font-semibold text-foreground sm:text-lg">
                       {tutor.name}
                     </h3>
-                    <p className="mt-0.5 text-sm font-medium text-primary">
+                    <p
+                      className={cn(
+                        "mt-0.5 text-sm font-medium sm:text-base",
+                        subjectColors[idx % 4],
+                      )}
+                    >
                       {tutor.courseOffered}
                     </p>
-                    <p
-                      className="mt-2 line-clamp-2 text-sm text-muted-foreground"
-                      title={tutor.description}
-                    >
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground sm:text-[0.9375rem]">
                       {tutor.description}
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -199,16 +220,15 @@ export function HomeFeatureTutor({
                             {tutor.studentsCount >= 1000
                               ? `${(tutor.studentsCount / 1000).toFixed(1)}k`
                               : tutor.studentsCount}{" "}
-                            reviews
+                            students
                           </span>
                         )}
-                      {tutor.coursesCount != null &&
-                        tutor.coursesCount > 0 && (
-                          <span className="flex items-center gap-1">
-                            <BookOpen className="size-3.5" />
-                            {tutor.coursesCount} subjects
-                          </span>
-                        )}
+                      {tutor.coursesCount != null && tutor.coursesCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <BookOpen className="size-3.5" />
+                          {tutor.coursesCount} courses
+                        </span>
+                      )}
                     </div>
                   </div>
                 </>

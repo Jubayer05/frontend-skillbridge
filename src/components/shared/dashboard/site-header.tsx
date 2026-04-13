@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { getCategoryById } from "@/services/categoryService";
 import { getSubjectById } from "@/services/subjectService";
-import { ModeToggle } from "../shared/ModeToggle";
+import { ModeToggle } from "@/components/shared/ModeToggle";
 
 function humanizeSegment(segment: string): string {
   return segment

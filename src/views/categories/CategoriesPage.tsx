@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryList from "@/components/category/CategoryList";
+import CategoryList from "@/components/modules/category/CategoryList";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";

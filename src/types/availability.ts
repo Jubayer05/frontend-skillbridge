@@ -1,5 +1,11 @@
 export type AvailabilitySlotStatus = "available" | "booked";
 
+/** Linked booking row for this slot (at most one), from the API. */
+export type AvailabilitySlotBookingRef = {
+  id: string;
+  status: "confirmed" | "completed" | "cancelled";
+};
+
 export type AvailabilitySlotSubject = {
   id: string;
   name: string;
@@ -20,6 +26,8 @@ export interface AvailabilitySlot {
   endAt: string;
   price: string;
   status: AvailabilitySlotStatus;
+  /** Omitted on some public responses; tutor endpoints include it when a booking row exists. */
+  booking?: AvailabilitySlotBookingRef | null;
   createdAt: string;
 }
 

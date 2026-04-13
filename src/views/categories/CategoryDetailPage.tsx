@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryDetail from "@/components/category/CategoryDetail";
+import CategoryDetail from "@/components/modules/category/CategoryDetail";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { deleteCategory } from "@/services/categoryService";
@@ -8,9 +8,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-function paramId(
-  value: string | string[] | undefined,
-): string {
+function paramId(value: string | string[] | undefined): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value) && value[0]) return value[0];
   return "";

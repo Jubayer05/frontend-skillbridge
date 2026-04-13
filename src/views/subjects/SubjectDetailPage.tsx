@@ -1,9 +1,10 @@
 "use client";
 
-import SubjectDetail from "@/components/subject/SubjectDetail";
+import SubjectDetail from "@/components/modules/subject/SubjectDetail";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { deleteSubject } from "@/services/subjectService";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,8 +27,18 @@ export default function SubjectDetailPage() {
 
   if (!subjectId) {
     return (
-      <div className="p-6">
-        <p className="text-muted-foreground text-sm">Invalid subject.</p>
+      <div className="flex min-h-[40vh] items-center justify-center bg-[#f8f7f4] p-8">
+        <div className="max-w-md rounded-xl border border-dashed border-[#e4e1d8] bg-white px-6 py-10 text-center">
+          <p className="text-[15px] font-medium text-[#0f1f3d]">
+            Invalid subject
+          </p>
+          <p className="mt-2 text-[13px] text-[#8896a8]">
+            This link may be broken or the subject was removed.
+          </p>
+          <Button asChild variant="outline" className="mt-6">
+            <Link href="/subjects">Back to subjects</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -52,28 +63,55 @@ export default function SubjectDetailPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {canManage ? (
-        <div className="flex flex-wrap items-center gap-2 border-b px-4 pt-4 pb-2 md:px-6">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/dashboard/subjects/${subjectId}/edit`}>Edit</Link>
+    <div className="min-h-screen bg-[#f8f7f4]">
+      <div className="border-b border-[#e4e1d8] bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="-ml-2 w-fit text-[#4a5568] hover:text-[#0f1f3d]"
+          >
+            <Link href="/subjects" className="gap-2">
+              <ArrowLeft className="size-4" />
+              All subjects
+            </Link>
           </Button>
-          {isAdmin ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              type="button"
-              disabled={deleting}
-              onClick={handleDelete}
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </Button>
+          {canManage ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link
+                  href={`/dashboard/subjects/${subjectId}/edit`}
+                  className="gap-1.5"
+                >
+                  <Pencil className="size-3.5" />
+                  Edit
+                </Link>
+              </Button>
+              {isAdmin ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  type="button"
+                  disabled={deleting}
+                  onClick={handleDelete}
+                  className="gap-1.5"
+                >
+                  <Trash2 className="size-3.5" />
+                  {deleting ? "Deleting…" : "Delete"}
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
-      ) : null}
-      {deleteError ? (
-        <p className="text-destructive px-4 text-sm md:px-6">{deleteError}</p>
-      ) : null}
+        {deleteError ? (
+          <div className="mx-auto max-w-6xl px-4 pb-4 md:px-6">
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">
+              {deleteError}
+            </p>
+          </div>
+        ) : null}
+      </div>
       <SubjectDetail subjectId={subjectId} />
     </div>
   );

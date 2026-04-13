@@ -1,12 +1,36 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { Minus, Plus } from "lucide-react";
+import { useState } from "react";
+
+const accentStyles = [
+  {
+    pill: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
+    border: "border-violet-200 dark:border-violet-800",
+    icon: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  },
+  {
+    pill: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
+    border: "border-teal-200 dark:border-teal-800",
+    icon: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
+  },
+  {
+    pill: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+    border: "border-orange-200 dark:border-orange-800",
+    icon: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  },
+  {
+    pill: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    border: "border-blue-200 dark:border-blue-800",
+    icon: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  },
+  {
+    pill: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
+    border: "border-pink-200 dark:border-pink-800",
+    icon: "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
+  },
+];
 
 const defaultFaqs = [
   {
@@ -40,7 +64,6 @@ interface FaqItem {
   question: string;
   answer: string;
 }
-
 interface FaqHomeProps {
   title?: string;
   description?: string;
@@ -49,58 +72,76 @@ interface FaqHomeProps {
 }
 
 export function FaqHome({
-  title = "Frequently asked questions",
+  title = "Frequently asked questions.",
   description = "Everything you need to know about learning and teaching on SkillBridge.",
   faqs = defaultFaqs,
   className,
 }: FaqHomeProps) {
+  const [open, setOpen] = useState<number | null>(null);
+
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 px-6 py-12 shadow-sm backdrop-blur-sm sm:px-10 sm:py-16 md:px-14",
+        "overflow-hidden rounded-2xl border border-border/50 bg-background px-6 py-12 sm:px-10 sm:py-14",
         className,
       )}
     >
-      {/* Subtle background gradient */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-30"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% -20%, var(--primary / 0.08), transparent)",
-        }}
-      />
+      <div className="text-center mb-10 max-w-3xl mx-auto">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-100 px-3 py-1 text-xs font-medium text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 mb-4">
+          Got questions?
+        </span>
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          {title}
+        </h2>
+        {description && (
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground sm:text-lg">
+            {description}
+          </p>
+        )}
+      </div>
 
-      <div className="container relative mx-auto max-w-3xl">
-        <div className="mb-12 text-center sm:mb-14">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-            {title}
-          </h2>
-          {description && (
-            <p className="mt-4 max-w-xl mx-auto text-muted-foreground sm:text-lg">
-              {description}
-            </p>
-          )}
-        </div>
-
-        <Accordion type="single" collapsible className="w-full space-y-1">
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`faq-${index}`}
-              className="rounded-xl border border-border/60 bg-background/60 shadow-xs transition-colors hover:border-border hover:bg-background/80 data-[state=open]:border-primary/20 data-[state=open]:bg-background"
+      <div className="max-w-3xl mx-auto space-y-2">
+        {faqs.map((faq, i) => {
+          const s = accentStyles[i % accentStyles.length];
+          const isOpen = open === i;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "rounded-xl border bg-background transition-colors",
+                isOpen ? cn("border", s.border) : "border-border/60",
+              )}
             >
-              <AccordionTrigger
-                icon="plus"
-                className="py-5 px-4 text-left text-base font-semibold sm:py-6 sm:text-lg"
+              <button
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+                aria-expanded={isOpen}
               >
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="pb-5 px-4  text-muted-foreground sm:pb-6 sm:text-base leading-relaxed">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                <span className="text-sm font-semibold text-foreground sm:text-base">
+                  {faq.question}
+                </span>
+                <span
+                  className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-full transition-colors",
+                    s.icon,
+                  )}
+                >
+                  {isOpen ? (
+                    <Minus className="size-3.5" />
+                  ) : (
+                    <Plus className="size-3.5" />
+                  )}
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

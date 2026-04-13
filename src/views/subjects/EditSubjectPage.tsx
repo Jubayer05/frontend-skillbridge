@@ -1,6 +1,6 @@
 "use client";
 
-import SubjectForm from "@/components/subject/SubjectForm";
+import SubjectForm from "@/components/modules/subject/SubjectForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubjectById } from "@/hooks/useSubjects";
 import { updateSubject } from "@/services/subjectService";

@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
+  DashboardHero,
+  DashboardPageShell,
+} from "@/components/modules/profile/dashboard-page-shell";
+import { Button } from "@/components/ui/button";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -79,28 +84,30 @@ export function StudentDashboardOverview() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <Skeleton className="h-28 w-full" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+      <DashboardPageShell>
+        <div className="space-y-8">
+          <Skeleton className="h-36 w-full rounded-2xl" />
+          <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+          </div>
+          <Skeleton className="h-72 w-full rounded-xl" />
         </div>
-        <Skeleton className="h-72 w-full" />
-      </div>
+      </DashboardPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 md:p-6">
-        <Card>
+      <DashboardPageShell>
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
           <CardHeader>
             <CardTitle>Unable to load dashboard</CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </DashboardPageShell>
     );
   }
 
@@ -124,88 +131,106 @@ export function StudentDashboardOverview() {
   ];
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <Card className="border-primary/15 bg-linear-to-r from-primary/8 via-background to-background">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <Sparkles className="size-5 text-primary" />
-            {`Welcome back, ${profile?.name ?? "Student"}`}
-          </CardTitle>
-          <CardDescription>
-            Stay on top of your upcoming tutoring sessions and keep your learning
-            profile up to date.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <DashboardPageShell>
+      <div className="space-y-8">
+        <DashboardHero
+          eyebrow="Student home"
+          title={`Welcome back, ${profile?.name ?? "Student"}`}
+          description="See what is next on your calendar and keep your profile ready so tutors can support you."
+          action={
+            <Button
+              asChild
+              variant="outline"
+              className="border-white/25 bg-white/10 text-white hover:bg-white/15"
+            >
+              <Link href="/dashboard/profile">Edit profile</Link>
+            </Button>
+          }
+        />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <div>
-                <CardDescription>{stat.label}</CardDescription>
-                <CardTitle className="mt-2 text-3xl">{stat.value}</CardTitle>
-              </div>
-              <stat.icon className="size-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {stat.hint}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Upcoming bookings</CardTitle>
-          <CardDescription>
-            Your next confirmed tutoring sessions at a glance.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {upcoming.length > 0 ? (
-            upcoming.map((booking) => (
-              <div
-                key={booking.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium truncate">
-                    {booking.subject?.name ?? "Subject"} with{" "}
-                    {booking.tutor?.name ?? "Tutor"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatSlotTitle({
-                      name: booking.slotName,
-                      date: booking.date,
-                      startTime: booking.startTime,
-                      endTime: booking.endTime,
-                    })}
-                  </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <Card
+              key={stat.label}
+              className="border border-[#e4e1d8] bg-white shadow-sm transition-shadow hover:shadow-md"
+            >
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                <div>
+                  <CardDescription className="text-xs font-medium uppercase tracking-wide text-[#5c5a54]">
+                    {stat.label}
+                  </CardDescription>
+                  <CardTitle className="mt-2 flex items-center gap-2 font-serif text-3xl font-medium tracking-tight text-[#0f1f3d]">
+                    {stat.label === "Upcoming bookings" ? (
+                      <Sparkles className="size-6 text-amber-600" />
+                    ) : null}
+                    {stat.value}
+                  </CardTitle>
                 </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  Confirmed
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted-foreground text-sm">
-              No upcoming bookings yet. Book a slot from the categories page.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                <div className="flex size-10 items-center justify-center rounded-lg bg-[#0f1f3d]/6">
+                  <stat.icon className="size-5 text-[#0f1f3d]" />
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-[#5c5a54]">
+                {stat.hint}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      <p className="text-muted-foreground text-center text-sm">
-        Completed a session?{" "}
-        <Link
-          href="/dashboard/bookings"
-          className="text-primary font-medium underline underline-offset-4 hover:no-underline"
-        >
-          Leave feedback
-        </Link>{" "}
-        from your Bookings page.
-      </p>
-    </div>
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+              Upcoming bookings
+            </CardTitle>
+            <CardDescription>
+              Your next confirmed tutoring sessions at a glance.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {upcoming.length > 0 ? (
+              upcoming.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e4e1d8] bg-[#faf9f6] px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-[#0f1f3d]">
+                      {booking.subject?.name ?? "Subject"} with{" "}
+                      {booking.tutor?.name ?? "Tutor"}
+                    </p>
+                    <p className="text-sm text-[#5c5a54]">
+                      {formatSlotTitle({
+                        name: booking.slotName,
+                        date: booking.date,
+                        startTime: booking.startTime,
+                        endTime: booking.endTime,
+                      })}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-[#0f1f3d]">
+                    Confirmed
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[#5c5a54]">
+                No upcoming bookings yet. Book a slot from the categories page.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-sm text-[#5c5a54]">
+          Completed a session?{" "}
+          <Link
+            href="/dashboard/bookings"
+            className="font-medium text-[#0f1f3d] underline underline-offset-4 hover:text-amber-700"
+          >
+            Leave feedback
+          </Link>{" "}
+          from your Bookings page.
+        </p>
+      </div>
+    </DashboardPageShell>
   );
 }

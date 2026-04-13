@@ -9,6 +9,10 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  DashboardHero,
+  DashboardPageShell,
+} from "@/components/modules/profile/dashboard-page-shell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -75,31 +79,33 @@ export function TutorDashboardOverview() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <Skeleton className="h-28 w-full" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+      <DashboardPageShell>
+        <div className="space-y-8">
+          <Skeleton className="h-36 w-full rounded-2xl" />
+          <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Skeleton className="h-72 w-full rounded-xl" />
+            <Skeleton className="h-72 w-full rounded-xl" />
+          </div>
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Skeleton className="h-72 w-full" />
-          <Skeleton className="h-72 w-full" />
-        </div>
-      </div>
+      </DashboardPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 md:p-6">
-        <Card>
+      <DashboardPageShell>
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
           <CardHeader>
             <CardTitle>Unable to load dashboard</CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </DashboardPageShell>
     );
   }
 
@@ -138,90 +144,112 @@ export function TutorDashboardOverview() {
   ];
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <Card className="border-primary/15 bg-linear-to-r from-primary/8 via-background to-background">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-2xl">{`Tutor dashboard for ${profile?.name ?? "Tutor"}`}</CardTitle>
-            <CardDescription>
-              Track your sessions, earnings, and student feedback from one place.
-            </CardDescription>
-          </div>
-          <Button asChild>
-            <Link href="/tutor/availability">Manage availability</Link>
-          </Button>
-        </CardHeader>
-      </Card>
+    <DashboardPageShell>
+      <div className="space-y-8">
+        <DashboardHero
+          eyebrow="Tutor home"
+          title={`Welcome, ${profile?.name ?? "Tutor"}`}
+          description="Track sessions, your rate, and feedback in one calm workspace. Open availability when you are ready for new bookings."
+          action={
+            <Button
+              asChild
+              className="border-0 bg-amber-500 text-[#0f1f3d] shadow-sm hover:bg-amber-400"
+            >
+              <Link href="/tutor/availability">Manage availability</Link>
+            </Button>
+          }
+        />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <div>
-                <CardDescription>{stat.label}</CardDescription>
-                <CardTitle className="mt-2 text-3xl">{stat.value}</CardTitle>
-              </div>
-              <stat.icon className="size-5 text-muted-foreground" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <Card
+              key={stat.label}
+              className="border border-[#e4e1d8] bg-white shadow-sm transition-shadow hover:shadow-md"
+            >
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                <div>
+                  <CardDescription className="text-xs font-medium uppercase tracking-wide text-[#5c5a54]">
+                    {stat.label}
+                  </CardDescription>
+                  <CardTitle className="mt-2 font-serif text-3xl font-medium tracking-tight text-[#0f1f3d]">
+                    {stat.value}
+                  </CardTitle>
+                </div>
+                <div className="flex size-10 items-center justify-center rounded-lg bg-[#0f1f3d]/6">
+                  <stat.icon className="size-5 text-[#0f1f3d]" />
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-[#5c5a54]">
+                {stat.hint}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="border border-[#e4e1d8] bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+                Upcoming sessions
+              </CardTitle>
+              <CardDescription>
+                Your next confirmed tutoring sessions.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {stat.hint}
+            <CardContent className="space-y-3">
+              {upcoming.length > 0 ? (
+                upcoming.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="rounded-xl border border-[#e4e1d8] bg-[#faf9f6] px-4 py-3"
+                  >
+                    <p className="font-medium text-[#0f1f3d]">
+                      {booking.subject?.name ?? "Subject"}
+                    </p>
+                    <p className="text-sm text-[#5c5a54]">
+                      {formatSlotTitle({
+                        name: booking.slotName,
+                        date: booking.date,
+                        startTime: booking.startTime,
+                        endTime: booking.endTime,
+                      })}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-[#5c5a54]">
+                  No upcoming sessions yet.
+                </p>
+              )}
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming sessions</CardTitle>
-            <CardDescription>Your next booked tutoring sessions.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {upcoming.length > 0 ? (
-              upcoming.map((booking) => (
-                <div key={booking.id} className="rounded-lg border px-4 py-3">
-                  <p className="font-medium">
-                    {booking.subject?.name ?? "Subject"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatSlotTitle({
-                      name: booking.slotName,
-                      date: booking.date,
-                      startTime: booking.startTime,
-                      endTime: booking.endTime,
-                    })}
-                  </p>
+          <Card className="border border-[#e4e1d8] bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+                Recent reviews
+              </CardTitle>
+              <CardDescription>
+                Sample feedback—see live reviews on your public profile.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {reviews.map((review) => (
+                <div
+                  key={review.student}
+                  className="rounded-xl border border-[#e4e1d8] bg-[#faf9f6] px-4 py-3 text-sm"
+                >
+                  <div className="mb-1.5 flex items-center gap-2 font-medium text-[#0f1f3d]">
+                    <MessageSquareQuote className="size-4 text-amber-600" />
+                    {review.student}
+                  </div>
+                  <p className="leading-relaxed text-[#5c5a54]">{review.text}</p>
                 </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No upcoming sessions yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent reviews</CardTitle>
-            <CardDescription>Latest feedback from your students.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {reviews.map((review) => (
-              <div
-                key={review.student}
-                className="rounded-lg border px-4 py-3 text-sm"
-              >
-                <div className="mb-2 flex items-center gap-2 font-medium">
-                  <MessageSquareQuote className="size-4 text-primary" />
-                  {review.student}
-                </div>
-                <p className="text-muted-foreground">{review.text}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

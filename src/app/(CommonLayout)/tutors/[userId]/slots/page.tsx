@@ -22,5 +22,5 @@ export default async function TutorSlotsPage({
     );
   }
 
-  return <TutorPublicSlots tutorUserId={userId} />;
+  return <TutorPublicSlots key={userId} tutorUserId={userId} />;
 }

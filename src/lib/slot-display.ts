@@ -21,3 +21,24 @@ export function formatSlotTitle(slot: SlotDisplayFields): string {
   return n ? `${n} · ${schedule}` : schedule;
 }
 
+/** True when the session start is strictly after now (uses `startAt` when set). */
+export function isSlotSessionInFuture(slot: SlotScheduleFields & { startAt: string }): boolean {
+  const startAt = slot.startAt?.trim();
+  if (startAt) {
+    const t = Date.parse(startAt);
+    if (!Number.isNaN(t)) return t > Date.now();
+  }
+  const date = slot.date?.trim();
+  const time = slot.startTime?.trim();
+  if (date && time) {
+    const combined = time.includes("T") ? time : `${date}T${time}`;
+    const t = Date.parse(combined);
+    if (!Number.isNaN(t)) return t > Date.now();
+  }
+  if (date) {
+    const t = Date.parse(date);
+    if (!Number.isNaN(t)) return t > Date.now();
+  }
+  return false;
+}
+

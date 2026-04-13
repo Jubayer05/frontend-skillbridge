@@ -1,6 +1,6 @@
 "use client";
 
-import SubjectForm from "@/components/subject/SubjectForm";
+import SubjectForm from "@/components/modules/subject/SubjectForm";
 import { createSubject } from "@/services/subjectService";
 import type {
   CreateSubjectPayload,

@@ -60,41 +60,18 @@ export function getStudentSidebarMenu(
         isActive: true,
         items: [
           { title: "Overview", url: "/dashboard" },
-          { title: "Profile", url: "/dashboard/profile" },
           { title: "Bookings", url: "/dashboard/bookings" },
         ],
       },
-      {
-        title: "My learning",
-        url: "/student/learning",
-        icon: "BookOpen",
-        items: [
-          { title: "Courses", url: "/student/courses" },
-          { title: "Bookmarks", url: "/student/bookmarks" },
-        ],
-      },
+
       {
         title: "Settings",
         url: "/student/settings",
         icon: "Settings",
-        items: [
-          { title: "Profile", url: "/dashboard/profile" },
-          { title: "Notifications", url: "/student/settings/notifications" },
-        ],
+        items: [{ title: "Profile", url: "/dashboard/profile" }],
       },
     ],
-    projects: [
-      {
-        name: "In progress",
-        url: "/student/learning?filter=in-progress",
-        icon: "Frame",
-      },
-      {
-        name: "Completed",
-        url: "/student/learning?filter=completed",
-        icon: "PieChart",
-      },
-    ],
+    projects: [],
     user: {
       name: user?.name ?? "Student",
       email: user?.email ?? "",

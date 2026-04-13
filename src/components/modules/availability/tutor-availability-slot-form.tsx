@@ -366,7 +366,11 @@ export function TutorAvailabilitySlotForm({
         )}
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-amber-500 text-[#0f1f3d] hover:bg-amber-400 sm:w-auto"
+      >
         {mode === "create" ? "Create slot" : "Save changes"}
       </Button>
     </form>

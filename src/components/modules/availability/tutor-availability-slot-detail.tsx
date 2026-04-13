@@ -7,6 +7,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { TutorAvailabilitySlotForm } from "@/components/modules/availability/tutor-availability-slot-form";
+import {
+  DashboardHero,
+  DashboardPageShell,
+} from "@/components/modules/profile/dashboard-page-shell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { canDeleteTutorAvailabilitySlot } from "@/lib/availability-slot-ui";
 import { copyToClipboard } from "@/lib/copy-to-clipboard";
 import { formatSlotTitle } from "@/lib/slot-display";
 import {
@@ -58,6 +63,12 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
   }, [slotId]);
 
   const onDelete = () => {
+    if (slot && !canDeleteTutorAvailabilitySlot(slot)) {
+      toast.error(
+        "You can’t delete a slot that has an active or completed booking. Cancel the booking first if allowed.",
+      );
+      return;
+    }
     if (
       !window.confirm(
         "Delete this availability slot? This cannot be undone.",
@@ -82,60 +93,80 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-48 w-full max-w-lg" />
-      </div>
+      <DashboardPageShell>
+        <div className="space-y-6">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+      </DashboardPageShell>
     );
   }
 
   if (error || !slot) {
     return (
-      <div className="p-4 md:p-6">
-        <Card>
+      <DashboardPageShell>
+        <Card className="border border-[#e4e1d8] bg-white shadow-sm">
           <CardHeader>
             <CardTitle>Slot not available</CardTitle>
             <CardDescription>{error ?? "Unknown error"}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="border-[#e4e1d8]">
               <Link href="/tutor/availability">Back to availability</Link>
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </DashboardPageShell>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Button asChild variant="ghost" size="sm" className="mb-1 -ml-2">
+    <DashboardPageShell>
+      <div className="space-y-8">
+        <div className="space-y-3">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="-ml-2 h-auto px-2 text-[#5c5a54] hover:text-[#0f1f3d]"
+          >
             <Link href="/tutor/availability">← Availability</Link>
           </Button>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {formatSlotTitle(slot)}
-            {slot.subject && (
-              <span className="text-muted-foreground block text-base font-normal">
-                {slot.subject.category.name} · {slot.subject.name}
-              </span>
-            )}
-          </h1>
+          <DashboardHero
+            eyebrow="Slot detail"
+            title={formatSlotTitle(slot)}
+            description={
+              slot.subject
+                ? `${slot.subject.category.name} · ${slot.subject.name} · $${slot.price} · ${slot.status}`
+                : `No subject linked · $${slot.price} · ${slot.status}`
+            }
+            action={
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={
+                  deleting ||
+                  (slot ? !canDeleteTutorAvailabilitySlot(slot) : true)
+                }
+                title={
+                  slot && !canDeleteTutorAvailabilitySlot(slot)
+                    ? "Cannot delete: active or completed booking on this slot"
+                    : undefined
+                }
+                onClick={onDelete}
+              >
+                Delete slot
+              </Button>
+            }
+          />
         </div>
-        <Button
-          type="button"
-          variant="destructive"
-          disabled={deleting}
-          onClick={onDelete}
-        >
-          Delete slot
-        </Button>
-      </div>
 
-      <Card>
+      <Card className="border border-[#e4e1d8] bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Share this slot</CardTitle>
+          <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+            Share this slot
+          </CardTitle>
           <CardDescription>
             Copy the page link to open this session from another device. Students
             book from the public catalog; they do not need this link.
@@ -146,7 +177,7 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
             type="button"
             variant="outline"
             size="sm"
-            className="gap-1.5"
+            className="gap-1.5 border-[#e4e1d8]"
             onClick={() => {
               const url =
                 typeof window !== "undefined" ? window.location.href : "";
@@ -166,9 +197,11 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border border-[#e4e1d8] bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Details</CardTitle>
+          <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+            Details
+          </CardTitle>
           <CardDescription>
             {slot.subject ? (
               <>
@@ -183,20 +216,22 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
             <span className="capitalize">{slot.status}</span>
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground space-y-1 text-sm">
+        <CardContent className="space-y-1 text-sm text-[#5c5a54]">
           <p>Starts (UTC): {new Date(slot.startAt).toISOString()}</p>
           <p>Ends (UTC): {new Date(slot.endAt).toISOString()}</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border border-[#e4e1d8] bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Edit slot</CardTitle>
+          <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+            Edit slot
+          </CardTitle>
           <CardDescription>
             Update name, time, price, or status. End time must be after start time.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="rounded-b-xl bg-[#faf9f6]/50 pt-2">
           <TutorAvailabilitySlotForm
             key={`${slot.id}-${slot.name}-${slot.subjectId ?? ""}-${slot.startAt}-${slot.endAt}-${slot.price}-${slot.status}`}
             mode="edit"
@@ -205,6 +240,7 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
           />
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </DashboardPageShell>
   );
 }

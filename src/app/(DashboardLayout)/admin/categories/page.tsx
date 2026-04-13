@@ -1,5 +1,5 @@
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import CategoryList from "@/components/category/CategoryList";
+import CategoryList from "@/components/modules/category/CategoryList";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

@@ -87,13 +87,13 @@ const Footer = ({
   className,
 }: FooterProps) => {
   return (
-    <section className={cn("pt-12 pb-6", className)}>
-      <div className="container">
-        <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
-          <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
+    <footer className={cn("pt-10 pb-8 sm:pt-12 sm:pb-10", className)}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex w-full min-w-0 flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-14">
+          <div className="flex w-full min-w-0 flex-col gap-6 text-center sm:text-left lg:max-w-md lg:shrink-0">
             {/* Logo - light and dark versions */}
-            <div className="flex items-center gap-2 lg:justify-start">
-              <Link href={logo.url} className="flex items-center gap-2">
+            <div className="flex justify-center sm:justify-start">
+              <Link href={logo.url} className="inline-flex items-center gap-2">
                 <Image
                   src="/logo/logo-light.png"
                   alt={logo.alt}
@@ -112,30 +112,36 @@ const Footer = ({
                 />
               </Link>
             </div>
-            <p className="max-w-[70%] text-sm text-muted-foreground">
+            <p className="mx-auto max-w-prose text-pretty text-sm text-muted-foreground sm:mx-0">
               {description}
             </p>
-            <ul className="flex items-center space-x-6 text-muted-foreground">
+            <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-muted-foreground sm:justify-start sm:gap-x-6">
               {socialLinks.map((social, idx) => (
-                <li key={idx} className="font-medium hover:text-primary">
-                  <Link href={social.href} aria-label={social.label}>
+                <li key={idx}>
+                  <Link
+                    href={social.href}
+                    aria-label={social.label}
+                    className="inline-flex size-10 items-center justify-center rounded-md font-medium transition-colors hover:bg-accent hover:text-primary"
+                  >
                     {social.icon}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
+          <div className="grid min-w-0 w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-3 lg:gap-x-10 xl:gap-x-16">
             {sections.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold">{section.title}</h3>
-                <ul className="space-y-3 text-sm text-muted-foreground">
+              <div key={sectionIdx} className="text-center sm:text-left">
+                <h3 className="mb-3 font-bold sm:mb-4">{section.title}</h3>
+                <ul className="space-y-2.5 text-sm text-muted-foreground sm:space-y-3">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
                       className="font-medium hover:text-primary"
                     >
-                      <Link href={link.href}>{link.name}</Link>
+                      <Link href={link.href} className="inline-block py-0.5">
+                        {link.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -143,18 +149,20 @@ const Footer = ({
             ))}
           </div>
         </div>
-        <div className="mt-8 flex flex-col justify-between gap-4 border-t py-8 text-xs font-medium text-muted-foreground md:flex-row md:items-center md:text-left">
-          <p className="order-2 lg:order-1">{copyright}</p>
-          <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
+        <div className="mt-10 flex flex-col gap-4 border-t border-border/60 pt-8 text-center text-xs font-medium text-muted-foreground sm:mt-12 sm:gap-5 sm:pt-10 md:flex-row md:items-center md:justify-between md:text-left">
+          <p className="text-pretty">{copyright}</p>
+          <ul className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center md:justify-end md:gap-x-6 md:gap-y-1">
             {legalLinks.map((link, idx) => (
               <li key={idx} className="hover:text-primary">
-                <Link href={link.href}> {link.name}</Link>
+                <Link href={link.href} className="inline-block py-1">
+                  {link.name}
+                </Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
-    </section>
+    </footer>
   );
 };
 

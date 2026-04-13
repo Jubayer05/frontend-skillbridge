@@ -3,7 +3,11 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
-import { StaticStars } from "@/components/reviews/StarRating";
+import {
+  DashboardHero,
+  DashboardPageShell,
+} from "@/components/modules/profile/dashboard-page-shell";
+import { StaticStars } from "@/components/modules/reviews/StarRating";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -65,23 +69,28 @@ export function TutorReviewsDashboardPage() {
   }, []);
 
   useEffect(() => {
-    load(1);
+    queueMicrotask(() => {
+      load(1);
+    });
   }, [load]);
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Reviews</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Feedback from students after completed sessions ({total} total).
-        </p>
-      </div>
+    <DashboardPageShell>
+      <div className="space-y-8">
+        <DashboardHero
+          eyebrow="Reputation"
+          title="Reviews"
+          description={`Feedback from students after completed sessions (${total} total).`}
+        />
 
-      <Card className="border-border/80">
+      <Card className="border border-[#e4e1d8] bg-white shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Student feedback</CardTitle>
+          <CardTitle className="font-serif text-lg text-[#0f1f3d]">
+            Student feedback
+          </CardTitle>
           <CardDescription>
-            Ratings, comments, student details, and the booked slot for each review.
+            Ratings, comments, student details, and the booked slot for each
+            review.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,24 +98,27 @@ export function TutorReviewsDashboardPage() {
             <p className="text-destructive text-sm">{error}</p>
           ) : loading ? (
             <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
             </div>
           ) : rows.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No reviews yet. Students can leave feedback after you mark a booking as
-              completed.
+            <p className="text-sm text-[#5c5a54]">
+              No reviews yet. Students can leave feedback after you mark a
+              booking as completed.
             </p>
           ) : (
             <>
+              <div className="overflow-x-auto rounded-xl border border-[#e4e1d8]">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="min-w-[200px]">Student</TableHead>
                     <TableHead className="w-[140px]">Rating</TableHead>
                     <TableHead className="min-w-[220px]">Message</TableHead>
-                    <TableHead className="min-w-[240px]">Booking / slot</TableHead>
+                    <TableHead className="min-w-[240px]">
+                      Booking / slot
+                    </TableHead>
                     <TableHead className="w-[160px] whitespace-nowrap">
                       Review time
                     </TableHead>
@@ -114,7 +126,10 @@ export function TutorReviewsDashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      className="border-[#e4e1d8] hover:bg-[#faf9f6]"
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="bg-muted relative size-9 shrink-0 overflow-hidden rounded-full">
@@ -133,7 +148,9 @@ export function TutorReviewsDashboardPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-medium">{row.student.name}</p>
+                            <p className="truncate font-medium">
+                              {row.student.name}
+                            </p>
                             <p className="text-muted-foreground truncate text-xs">
                               {row.student.email}
                             </p>
@@ -150,13 +167,13 @@ export function TutorReviewsDashboardPage() {
                       </TableCell>
                       <TableCell className="max-w-[320px]">
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {row.comment?.trim()
-                            ? row.comment
-                            : "—"}
+                          {row.comment?.trim() ? row.comment : "—"}
                         </p>
                       </TableCell>
                       <TableCell>
-                        <p className="text-sm leading-snug">{formatSession(row)}</p>
+                        <p className="text-sm leading-snug">
+                          {formatSession(row)}
+                        </p>
                       </TableCell>
                       <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
                         {new Date(row.createdAt).toLocaleString(undefined, {
@@ -168,10 +185,11 @@ export function TutorReviewsDashboardPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {totalPages > 1 ? (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-4">
-                  <p className="text-muted-foreground text-sm">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#e4e1d8] pt-4">
+                  <p className="text-sm text-[#5c5a54]">
                     Page {page} of {totalPages}
                   </p>
                   <div className="flex gap-2">
@@ -179,6 +197,7 @@ export function TutorReviewsDashboardPage() {
                       type="button"
                       variant="outline"
                       size="sm"
+                      className="border-[#e4e1d8]"
                       disabled={page <= 1 || loading}
                       onClick={() => load(page - 1)}
                     >
@@ -188,6 +207,7 @@ export function TutorReviewsDashboardPage() {
                       type="button"
                       variant="outline"
                       size="sm"
+                      className="border-[#e4e1d8]"
                       disabled={page >= totalPages || loading}
                       onClick={() => load(page + 1)}
                     >
@@ -200,6 +220,7 @@ export function TutorReviewsDashboardPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </DashboardPageShell>
   );
 }

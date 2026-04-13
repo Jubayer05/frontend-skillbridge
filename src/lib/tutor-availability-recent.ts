@@ -1,4 +1,7 @@
-import type { AvailabilitySlot } from "@/types/availability";
+import type {
+  AvailabilitySlot,
+  AvailabilitySlotStatus,
+} from "@/types/availability";
 
 const STORAGE_KEY = "skillbridge-tutor-recent-availability-slots";
 const MAX_ENTRIES = 30;
@@ -8,6 +11,41 @@ export type RecentAvailabilitySlotRef = Pick<
   "id" | "name" | "date" | "startTime" | "endTime" | "status"
 >;
 
+/**
+ * Map API / Prisma / legacy localStorage values to the API shape
+ * (`"available"` | `"booked"`). Case-insensitive; unknown → `"available"`.
+ */
+export function coerceAvailabilitySlotStatus(
+  raw: unknown,
+): AvailabilitySlotStatus {
+  if (typeof raw !== "string") return "available";
+  const s = raw.trim().toLowerCase();
+  if (s === "booked") return "booked";
+  if (s === "available") return "available";
+  return "available";
+}
+
+/** Coerce a stored JSON row into a safe shape (legacy entries may omit fields). */
+export function normalizeRecentAvailabilitySlot(
+  raw: unknown,
+): RecentAvailabilitySlotRef | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  const id = typeof r.id === "string" && r.id.trim().length > 0 ? r.id.trim() : null;
+  if (!id) return null;
+
+  const status = coerceAvailabilitySlotStatus(r.status);
+
+  return {
+    id,
+    name: typeof r.name === "string" ? r.name : "",
+    date: typeof r.date === "string" ? r.date : "",
+    startTime: typeof r.startTime === "string" ? r.startTime : "",
+    endTime: typeof r.endTime === "string" ? r.endTime : "",
+    status,
+  };
+}
+
 function readAll(): RecentAvailabilitySlotRef[] {
   if (typeof window === "undefined") return [];
   try {
@@ -16,16 +54,8 @@ function readAll(): RecentAvailabilitySlotRef[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
     return parsed
-      .filter(
-        (row): row is RecentAvailabilitySlotRef =>
-          typeof row === "object" &&
-          row !== null &&
-          typeof (row as RecentAvailabilitySlotRef).id === "string",
-      )
-      .map((row) => ({
-        ...row,
-        name: typeof row.name === "string" ? row.name : "",
-      }));
+      .map((row) => normalizeRecentAvailabilitySlot(row))
+      .filter((row): row is RecentAvailabilitySlotRef => row !== null);
   } catch {
     return [];
   }
@@ -50,7 +80,7 @@ export function rememberAvailabilitySlot(slot: AvailabilitySlot) {
     date: slot.date,
     startTime: slot.startTime,
     endTime: slot.endTime,
-    status: slot.status,
+    status: coerceAvailabilitySlotStatus(slot.status),
   };
   const rest = readAll().filter((r) => r.id !== row.id);
   writeAll([row, ...rest]);

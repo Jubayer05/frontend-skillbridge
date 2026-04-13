@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryCard from "@/components/category/CategoryCard";
+import CategoryCard from "@/components/modules/category/CategoryCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/hooks/useCategories";
 import { usePathname, useRouter } from "next/navigation";
