@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { ReviewModal } from "@/components/reviews/ReviewModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ import {
   completeBooking,
   listBookings,
 } from "@/services/bookings";
+import { formatSlotTitle } from "@/lib/slot-display";
+import type { Review } from "@/types/review";
 import type { Booking, BookingStatus } from "@/types/booking";
 import { cn } from "@/lib/utils";
 
@@ -55,17 +58,34 @@ function BookingCard({
   const canCancel =
     booking.status === "confirmed" && (role === "STUDENT" || role === "TUTOR" || role === "ADMIN");
   const canComplete = booking.status === "confirmed" && role === "TUTOR";
+  const reviewId = booking.reviewId ?? null;
+  const canLeaveReview =
+    role === "STUDENT" &&
+    booking.status === "completed" &&
+    reviewId === null;
+
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  const sessionLabel = formatSlotTitle({
+    name: booking.slotName,
+    date: booking.date,
+    startTime: booking.startTime,
+    endTime: booking.endTime,
+  });
 
   return (
+    <div className="min-w-0">
     <Card className="border-border/60 bg-card/50">
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle className="text-base font-semibold">
-              {booking.date}{" "}
-              <span className="text-muted-foreground font-normal">
-                {booking.startTime}–{booking.endTime}
-              </span>
+            <CardTitle className="text-base font-semibold leading-snug">
+              {formatSlotTitle({
+                name: booking.slotName,
+                date: booking.date,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+              })}
             </CardTitle>
             <p className="text-muted-foreground mt-1 text-sm">
               {categoryName} ·{" "}
@@ -115,7 +135,7 @@ function BookingCard({
           </div>
         </div>
 
-        {(canCancel || canComplete) && (
+        {(canCancel || canComplete || canLeaveReview) && (
           <div className="flex flex-wrap gap-2">
             {canCancel ? (
               <Button
@@ -153,10 +173,38 @@ function BookingCard({
                 Mark completed
               </Button>
             ) : null}
+
+            {canLeaveReview ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setReviewOpen(true)}
+              >
+                Leave feedback
+              </Button>
+            ) : null}
           </div>
         )}
+
+        {reviewId ? (
+          <p className="text-muted-foreground text-xs">You left a review for this session.</p>
+        ) : null}
       </CardContent>
     </Card>
+
+    {canLeaveReview ? (
+      <ReviewModal
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        bookingId={booking.id}
+        sessionLabel={sessionLabel}
+        onSubmitted={(r: Review) => {
+          onChanged({ ...booking, reviewId: r.id });
+        }}
+      />
+    ) : null}
+    </div>
   );
 }
 

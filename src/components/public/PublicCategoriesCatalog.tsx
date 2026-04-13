@@ -13,13 +13,10 @@ import { listPublicAvailabilitySlotsBySubject } from "@/services/availability";
 import { listCategories } from "@/services/categoryService";
 import type { Category } from "@/types/category";
 import type { PublicAvailabilitySlot } from "@/types/availability";
+import { formatSlotTitle } from "@/lib/slot-display";
 import { cn } from "@/lib/utils";
 
 type SubjectRow = NonNullable<Category["subjects"]>[number];
-
-function formatTimeRange(start: string, end: string) {
-  return `${start}–${end}`;
-}
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -57,11 +54,8 @@ function SlotCard({ slot }: { slot: PublicAvailabilitySlot }) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <CardTitle className="text-base font-semibold">
-              {slot.date}{" "}
-              <span className="text-muted-foreground font-normal">
-                {formatTimeRange(slot.startTime, slot.endTime)}
-              </span>
+            <CardTitle className="text-base font-semibold leading-snug">
+              {formatSlotTitle(slot)}
             </CardTitle>
             <TutorMini slot={slot} />
           </div>

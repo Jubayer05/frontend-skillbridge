@@ -5,7 +5,7 @@ const MAX_ENTRIES = 30;
 
 export type RecentAvailabilitySlotRef = Pick<
   AvailabilitySlot,
-  "id" | "date" | "startTime" | "endTime" | "status"
+  "id" | "name" | "date" | "startTime" | "endTime" | "status"
 >;
 
 function readAll(): RecentAvailabilitySlotRef[] {
@@ -15,12 +15,17 @@ function readAll(): RecentAvailabilitySlotRef[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (row): row is RecentAvailabilitySlotRef =>
-        typeof row === "object" &&
-        row !== null &&
-        typeof (row as RecentAvailabilitySlotRef).id === "string",
-    );
+    return parsed
+      .filter(
+        (row): row is RecentAvailabilitySlotRef =>
+          typeof row === "object" &&
+          row !== null &&
+          typeof (row as RecentAvailabilitySlotRef).id === "string",
+      )
+      .map((row) => ({
+        ...row,
+        name: typeof row.name === "string" ? row.name : "",
+      }));
   } catch {
     return [];
   }
@@ -41,6 +46,7 @@ export function getRecentAvailabilitySlots(): RecentAvailabilitySlotRef[] {
 export function rememberAvailabilitySlot(slot: AvailabilitySlot) {
   const row: RecentAvailabilitySlotRef = {
     id: slot.id,
+    name: slot.name,
     date: slot.date,
     startTime: slot.startTime,
     endTime: slot.endTime,

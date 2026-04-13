@@ -19,6 +19,8 @@ export const API_ENDPOINTS = {
     update: `${BASE_URL}/profile`,
     tutorUpsert: `${BASE_URL}/tutor/profile`,
     tutorByUserId: (userId: string) => `${BASE_URL}/tutor/profile/${userId}`,
+    /** Signed-in tutor’s reviews (auth). */
+    tutorMyReviews: `${BASE_URL}/tutor/reviews`,
   },
   tutor: {
     featured: (limit?: number) =>
@@ -34,6 +36,26 @@ export const API_ENDPOINTS = {
     slotById: (slotId: string) =>
       `${BASE_URL}/availability/slots/${encodeURIComponent(slotId)}`,
     publicSlots: `${BASE_URL}/availability/public/slots`,
+    publicSlotById: (slotId: string) =>
+      `${BASE_URL}/availability/public/slots/${encodeURIComponent(slotId)}`,
+  },
+  reviews: {
+    create: `${BASE_URL}/reviews`,
+    byId: (id: string) =>
+      `${BASE_URL}/reviews/${encodeURIComponent(id)}`,
+    adminDelete: (id: string) =>
+      `${BASE_URL}/admin/reviews/${encodeURIComponent(id)}`,
+  },
+  tutors: {
+    reviews: (userId: string, params?: { page?: number; limit?: number }) => {
+      const u = new URL(
+        `${BASE_URL}/tutors/${encodeURIComponent(userId)}/reviews`,
+      );
+      if (params?.page != null) u.searchParams.set("page", String(params.page));
+      if (params?.limit != null)
+        u.searchParams.set("limit", String(params.limit));
+      return u.toString();
+    },
   },
   bookings: {
     list: `${BASE_URL}/bookings`,

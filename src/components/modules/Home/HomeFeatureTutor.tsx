@@ -216,7 +216,7 @@ export function HomeFeatureTutor({
               return tutor.userId ? (
                 <Link
                   key={tutor.id}
-                  href={`/tutors/${encodeURIComponent(tutor.userId)}/slots`}
+                  href={`/tutors/${encodeURIComponent(tutor.userId)}`}
                   className={cardClassName}
                 >
                   {inner}

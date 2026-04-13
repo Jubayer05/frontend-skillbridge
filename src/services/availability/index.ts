@@ -25,6 +25,20 @@ export async function listAvailabilitySlotsByTutor(
   return res.data;
 }
 
+/** Single slot for checkout / confirmation (no auth). */
+export async function getPublicAvailabilitySlotById(
+  slotId: string,
+): Promise<PublicAvailabilitySlot> {
+  const res = await apiFetch<PublicAvailabilitySlot>(
+    API_ENDPOINTS.availability.publicSlotById(slotId),
+    { method: "GET" },
+  );
+  if (!res.data) {
+    throw new Error("Slot data was not returned");
+  }
+  return res.data;
+}
+
 export async function listPublicAvailabilitySlotsBySubject(params: {
   subjectId: string;
   status?: AvailabilitySlotStatus;

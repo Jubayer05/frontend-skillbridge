@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
+import { formatSlotTitle } from "@/lib/slot-display";
 import { createBooking } from "@/services/bookingService";
+import { getPublicAvailabilitySlotById } from "@/services/availability";
+import type { PublicAvailabilitySlot } from "@/types/availability";
 
 function paramId(value: string | string[] | undefined): string {
   if (typeof value === "string") return value;
@@ -28,11 +32,7 @@ export default function SlotCheckoutPage() {
 
 function SlotCheckoutInner() {
   const params = useParams();
-  const router = useRouter();
-  const { user } = useAuth();
   const slotId = useMemo(() => paramId(params?.slotId), [params]);
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   if (!slotId) {
     return (
@@ -41,6 +41,40 @@ function SlotCheckoutInner() {
       </div>
     );
   }
+
+  return <SlotCheckoutForSlot key={slotId} slotId={slotId} />;
+}
+
+function SlotCheckoutForSlot({ slotId }: { slotId: string }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [slot, setSlot] = useState<PublicAvailabilitySlot | null>(null);
+  const [loadingSlot, setLoadingSlot] = useState(true);
+  const [slotError, setSlotError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getPublicAvailabilitySlotById(slotId)
+      .then((data) => {
+        if (!active) return;
+        setSlot(data);
+        setSlotError(null);
+        setLoadingSlot(false);
+      })
+      .catch((err: Error) => {
+        if (!active) return;
+        setSlotError(err.message ?? "Could not load slot");
+        setSlot(null);
+        setLoadingSlot(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [slotId]);
+
+  const canBook = slot?.status === "available";
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -61,8 +95,33 @@ function SlotCheckoutInner() {
           <div className="rounded-lg border bg-muted/20 p-4 text-sm">
             <p className="text-muted-foreground">Student</p>
             <p className="font-medium">{user?.name ?? "Student"}</p>
-            <p className="text-muted-foreground mt-3">Slot</p>
-            <p className="font-mono text-xs break-all">{slotId}</p>
+            <p className="text-muted-foreground mt-3">Session</p>
+            {loadingSlot ? (
+              <Skeleton className="mt-1 h-5 w-full max-w-md" />
+            ) : slotError ? (
+              <p className="text-destructive text-sm">{slotError}</p>
+            ) : slot ? (
+              <>
+                <p className="font-medium">{formatSlotTitle(slot)}</p>
+                <p className="text-muted-foreground mt-2">Tutor</p>
+                <p className="font-medium">{slot.tutor.name}</p>
+                {slot.subject ? (
+                  <>
+                    <p className="text-muted-foreground mt-2">Subject</p>
+                    <p className="font-medium">
+                      {slot.subject.category.name} · {slot.subject.name}
+                    </p>
+                  </>
+                ) : null}
+                <p className="text-muted-foreground mt-2">Price</p>
+                <p className="font-medium">${slot.price}</p>
+                {!canBook ? (
+                  <p className="text-amber-600 dark:text-amber-500 mt-3 text-sm">
+                    This slot is no longer available to book.
+                  </p>
+                ) : null}
+              </>
+            ) : null}
           </div>
 
           <div className="grid gap-2">
@@ -76,7 +135,7 @@ function SlotCheckoutInner() {
 
           <Button
             type="button"
-            disabled={submitting}
+            disabled={submitting || loadingSlot || !slot || !canBook}
             className="w-full"
             onClick={() => {
               setSubmitting(true);
@@ -87,7 +146,6 @@ function SlotCheckoutInner() {
               })
                 .then(() => {
                   toast.success("Booking confirmed");
-                  // Slot is marked BOOKED on the server; public lists will update on next fetch.
                   router.push("/categories");
                 })
                 .catch((err: Error) => {
@@ -103,4 +161,3 @@ function SlotCheckoutInner() {
     </div>
   );
 }
-

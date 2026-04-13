@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSubjectById } from "@/services/subjectService";
+import { formatSlotTitle } from "@/lib/slot-display";
 import { listPublicAvailabilitySlotsBySubject } from "@/services/availability";
 import type { PublicAvailabilitySlot } from "@/types/availability";
 
@@ -26,6 +28,7 @@ export function CategorySubjectSlots({
   subjectId: string;
   backHref?: string;
 }) {
+  const router = useRouter();
   const [slots, setSlots] = useState<PublicAvailabilitySlot[] | null>(null);
   const [title, setTitle] = useState<string>("Subject");
   const [categoryName, setCategoryName] = useState<string>("Category");
@@ -122,11 +125,8 @@ export function CategorySubjectSlots({
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <CardTitle className="text-base font-medium">
-                        {slot.date}{" "}
-                        <span className="text-muted-foreground font-normal">
-                          {slot.startTime}–{slot.endTime}
-                        </span>
+                      <CardTitle className="text-base font-medium leading-snug">
+                        {formatSlotTitle(slot)}
                       </CardTitle>
                       <CardDescription className="mt-1 flex items-center gap-2">
                         {slot.tutor.image ? (
@@ -161,7 +161,17 @@ export function CategorySubjectSlots({
                     </div>
                   ) : null}
                 </CardHeader>
-                <CardContent />
+                <CardContent>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={() =>
+                      router.push(`/checkout/slots/${slot.id}`)
+                    }
+                  >
+                    Book slot
+                  </Button>
+                </CardContent>
               </Card>
             </li>
           ))}

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { copyToClipboard } from "@/lib/copy-to-clipboard";
+import { formatSlotTitle } from "@/lib/slot-display";
 import {
   forgetAvailabilitySlotId,
   rememberAvailabilitySlot,
@@ -114,7 +115,7 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
             <Link href="/tutor/availability">← Availability</Link>
           </Button>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Slot · {slot.date}
+            {formatSlotTitle(slot)}
             {slot.subject && (
               <span className="text-muted-foreground block text-base font-normal">
                 {slot.subject.category.name} · {slot.subject.name}
@@ -134,26 +135,25 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Slot ID</CardTitle>
+          <CardTitle>Share this slot</CardTitle>
           <CardDescription>
-            Same value as in your browser address bar after{" "}
-            <span className="font-mono">/tutor/availability/</span>. Copy it if
-            you need to open this slot from another device.
+            Copy the page link to open this session from another device. Students
+            book from the public catalog; they do not need this link.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <code className="bg-muted text-foreground max-w-full flex-1 overflow-x-auto rounded-md border px-3 py-2 font-mono text-sm break-all">
-            {slot.id}
-          </code>
+        <CardContent>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="shrink-0 gap-1.5"
+            className="gap-1.5"
             onClick={() => {
-              copyToClipboard(slot.id)
+              const url =
+                typeof window !== "undefined" ? window.location.href : "";
+              if (!url) return;
+              copyToClipboard(url)
                 .then(() => {
-                  toast.success("Slot ID copied");
+                  toast.success("Link copied");
                 })
                 .catch(() => {
                   toast.error("Could not copy to clipboard");
@@ -161,7 +161,7 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
             }}
           >
             <Copy className="size-4" aria-hidden />
-            Copy ID
+            Copy page link
           </Button>
         </CardContent>
       </Card>
@@ -179,7 +179,7 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
                 No subject linked ·{" "}
               </span>
             )}
-            {slot.startTime}–{slot.endTime} · ${slot.price} ·{" "}
+            {formatSlotTitle(slot)} · ${slot.price} ·{" "}
             <span className="capitalize">{slot.status}</span>
           </CardDescription>
         </CardHeader>
@@ -193,12 +193,12 @@ export function TutorAvailabilitySlotDetail({ slotId }: { slotId: string }) {
         <CardHeader>
           <CardTitle>Edit slot</CardTitle>
           <CardDescription>
-            Update time, price, or status. End time must be after start time.
+            Update name, time, price, or status. End time must be after start time.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <TutorAvailabilitySlotForm
-            key={`${slot.id}-${slot.subjectId ?? ""}-${slot.startAt}-${slot.endAt}-${slot.price}-${slot.status}`}
+            key={`${slot.id}-${slot.name}-${slot.subjectId ?? ""}-${slot.startAt}-${slot.endAt}-${slot.price}-${slot.status}`}
             mode="edit"
             slot={slot}
             onUpdated={(s) => setSlot(s)}

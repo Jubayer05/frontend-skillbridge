@@ -144,6 +144,13 @@ export function getTutorSidebarMenu(
         items: [{ title: "All bookings", url: "/dashboard/bookings" }],
       },
       {
+        title: "Reviews",
+        url: "/tutor/reviews",
+        icon: "Star",
+        isActive: false,
+        items: [{ title: "Student feedback", url: "/tutor/reviews" }],
+      },
+      {
         title: "Catalog",
         url: "/dashboard/categories",
         icon: "FolderTree",

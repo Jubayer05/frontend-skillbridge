@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyProfile } from "@/services/profile";
 import { listBookings } from "@/services/bookings";
+import { formatSlotTitle } from "@/lib/slot-display";
 import type { Booking } from "@/types/booking";
 import type { UserProfile } from "@/types/profile";
 
@@ -183,7 +184,12 @@ export function TutorDashboardOverview() {
                     {booking.subject?.name ?? "Subject"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {booking.date} · {booking.startTime}–{booking.endTime}
+                    {formatSlotTitle({
+                      name: booking.slotName,
+                      date: booking.date,
+                      startTime: booking.startTime,
+                      endTime: booking.endTime,
+                    })}
                   </p>
                 </div>
               ))

@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import { StaticStars } from "@/components/reviews/StarRating";
 import {
   Avatar,
   AvatarFallback,
@@ -23,13 +26,14 @@ function initialsFromName(name: string): string {
 export default function TutorCard({ tutor }: { tutor: TutorProfileSummary }) {
   const displayName = tutor.user.name;
   const avatarSrc = tutor.profileImageUrl ?? tutor.user.image ?? undefined;
-  const ratingLabel =
-    tutor.rating !== null && tutor.rating !== ""
-      ? `${tutor.rating} (${tutor.totalReviews})`
-      : "No rating yet";
+  const ratingNum =
+    tutor.rating != null && tutor.rating !== ""
+      ? Number(tutor.rating)
+      : null;
+  const hasRating = ratingNum != null && !Number.isNaN(ratingNum);
 
-  return (
-    <Card className="overflow-hidden">
+  const inner = (
+    <Card className="h-full overflow-hidden transition-colors hover:bg-muted/30">
       <CardContent className="flex gap-4 p-4">
         <div className="relative shrink-0">
           <Avatar size="lg">
@@ -54,18 +58,39 @@ export default function TutorCard({ tutor }: { tutor: TutorProfileSummary }) {
           <p className="text-muted-foreground line-clamp-2 text-sm">
             {tutor.headline}
           </p>
-          <div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-sm">
+          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             <span>
               <span className="font-medium text-foreground">Rate:</span> $
               {tutor.hourlyRate}/hr
             </span>
-            <span>
-              <span className="font-medium text-foreground">Rating:</span>{" "}
-              {ratingLabel}
-            </span>
+            {hasRating ? (
+              <span className="flex flex-wrap items-center gap-2">
+                <StaticStars
+                  value={ratingNum}
+                  starClassName="size-3.5"
+                />
+                <span className="tabular-nums">
+                  {tutor.rating}{" "}
+                  <span className="text-muted-foreground">
+                    ({tutor.totalReviews})
+                  </span>
+                </span>
+              </span>
+            ) : (
+              <span>No ratings yet</span>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
+  );
+
+  return (
+    <Link
+      href={`/tutors/${encodeURIComponent(tutor.userId)}`}
+      className="block min-w-0"
+    >
+      {inner}
+    </Link>
   );
 }

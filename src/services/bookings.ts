@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { apiFetch } from "@/lib/api-fetch";
+import { normalizeBooking } from "@/lib/normalize-booking";
 import type { Booking, BookingStatus } from "@/types/booking";
 
 export async function listBookings(params?: {
@@ -13,7 +14,7 @@ export async function listBookings(params?: {
   if (params?.to) url.searchParams.set("to", params.to);
 
   const res = await apiFetch<Booking[]>(url.toString());
-  return res.data ?? [];
+  return (res.data ?? []).map((b) => normalizeBooking(b));
 }
 
 export async function cancelBooking(bookingId: string): Promise<Booking> {
@@ -21,7 +22,7 @@ export async function cancelBooking(bookingId: string): Promise<Booking> {
     method: "PATCH",
   });
   if (!res.data) throw new Error("Booking data was not returned");
-  return res.data;
+  return normalizeBooking(res.data);
 }
 
 export async function completeBooking(bookingId: string): Promise<Booking> {
@@ -32,6 +33,6 @@ export async function completeBooking(bookingId: string): Promise<Booking> {
     },
   );
   if (!res.data) throw new Error("Booking data was not returned");
-  return res.data;
+  return normalizeBooking(res.data);
 }
 

@@ -22,8 +22,8 @@ export default function TutorAvailabilityNewPage() {
         <CardHeader>
           <CardTitle>New availability slot</CardTitle>
           <CardDescription>
-            Choose a category and subject, then set date, time range, and price.
-            Times use 24-hour format (HH:mm).
+            Give the slot a short name students will see, then choose category and
+            subject, date, time range, and price. Times use 24-hour format (HH:mm).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

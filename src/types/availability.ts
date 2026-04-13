@@ -8,6 +8,8 @@ export type AvailabilitySlotSubject = {
 
 export interface AvailabilitySlot {
   id: string;
+  /** Tutor-defined label; not unique across slots. */
+  name: string;
   tutorId: string;
   subjectId: string | null;
   subject: AvailabilitySlotSubject | null;
@@ -32,6 +34,7 @@ export type PublicAvailabilitySlot = AvailabilitySlot & {
 };
 
 export interface CreateAvailabilitySlotPayload {
+  name: string;
   subjectId: string;
   date: string;
   startTime: string;

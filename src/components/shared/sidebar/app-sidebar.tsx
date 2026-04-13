@@ -5,6 +5,7 @@ import {
   BookOpen,
   Bot,
   Calendar,
+  ClipboardList,
   Command,
   FolderTree,
   Frame,
@@ -14,6 +15,7 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -43,6 +45,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Bot,
   BookOpen,
   Calendar,
+  ClipboardList,
+  Star,
   Settings: Settings2,
   Settings2,
   Frame,

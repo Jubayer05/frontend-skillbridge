@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { copyToClipboard } from "@/lib/copy-to-clipboard";
+import { formatSlotTitle } from "@/lib/slot-display";
 import {
   forgetAvailabilitySlotId,
   getRecentAvailabilitySlots,
@@ -62,9 +63,9 @@ export function TutorAvailabilityHome() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Availability</h1>
           <p className="text-muted-foreground text-sm">
-            Create and manage your tutoring slots. After you create or open a
-            slot, its ID is on that page and in the address bar. Recent slots
-            below also show the ID so you can copy it.
+            Create and manage your tutoring slots. Each slot has a name and
+            schedule that students see when booking. You can still open a slot
+            by pasting the ID from the address bar if needed.
           </p>
         </div>
         <Button asChild>
@@ -111,14 +112,14 @@ export function TutorAvailabilityHome() {
         <CardHeader>
           <CardTitle>Recent on this device</CardTitle>
           <CardDescription>
-            Slots you created or opened here (stored in the browser, not loaded
-            from the list API).
+            Slots you created or opened here (stored locally in this browser).
           </CardDescription>
         </CardHeader>
         <CardContent>
           {recent.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No slots yet. Create one or open an existing slot by ID.
+              No slots yet. Create one or open an existing slot using the field
+              above.
             </p>
           ) : (
             <ul className="space-y-3">
@@ -132,28 +133,27 @@ export function TutorAvailabilityHome() {
                       href={`/tutor/availability/${row.id}`}
                       className="font-medium text-primary hover:underline"
                     >
-                      {row.date} · {row.startTime}–{row.endTime}
+                      {formatSlotTitle(row)}
                     </Link>
                     <span className="text-muted-foreground capitalize">
                       {row.status}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <code
-                      className="bg-muted text-muted-foreground max-w-full min-w-0 flex-1 overflow-x-auto rounded px-2 py-1 font-mono text-xs break-all"
-                      title={row.id}
-                    >
-                      {row.id}
-                    </code>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       className="shrink-0 gap-1"
                       onClick={() => {
-                        copyToClipboard(row.id)
+                        const base =
+                          typeof window !== "undefined"
+                            ? window.location.origin
+                            : "";
+                        const url = `${base}/tutor/availability/${row.id}`;
+                        copyToClipboard(url)
                           .then(() => {
-                            toast.success("Slot ID copied");
+                            toast.success("Page link copied");
                           })
                           .catch(() => {
                             toast.error("Could not copy to clipboard");
@@ -161,7 +161,7 @@ export function TutorAvailabilityHome() {
                       }}
                     >
                       <Copy className="size-3.5" aria-hidden />
-                      Copy
+                      Copy link
                     </Button>
                     <Button
                       type="button"

@@ -5,6 +5,7 @@ export type Booking = {
   studentId: string;
   tutorProfileId: string;
   availabilitySlotId: string;
+  slotName: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -28,6 +29,8 @@ export type Booking = {
     name: string;
     category: { id: string; name: string };
   } | null;
+  /** Set after the student submits a review for this booking. */
+  reviewId: string | null;
 };
 
 export type CreateBookingPayload = {

@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { apiFetch } from "@/lib/api-fetch";
+import { normalizeBooking } from "@/lib/normalize-booking";
 import type { Booking, CreateBookingPayload } from "@/types/booking";
 
 export async function createBooking(payload: CreateBookingPayload): Promise<Booking> {
@@ -10,6 +11,6 @@ export async function createBooking(payload: CreateBookingPayload): Promise<Book
   if (!res.data) {
     throw new Error("Booking data was not returned");
   }
-  return res.data;
+  return normalizeBooking(res.data);
 }
 

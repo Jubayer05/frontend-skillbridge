@@ -1,6 +1,7 @@
 "use client";
 
 import { BookOpen, CalendarClock, Clock3, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
@@ -13,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyProfile } from "@/services/profile";
 import { listBookings } from "@/services/bookings";
+import { formatSlotTitle } from "@/lib/slot-display";
 import type { Booking } from "@/types/booking";
 import type { UserProfile } from "@/types/profile";
 
@@ -173,7 +175,12 @@ export function StudentDashboardOverview() {
                     {booking.tutor?.name ?? "Tutor"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {booking.date} · {booking.startTime}–{booking.endTime}
+                    {formatSlotTitle({
+                      name: booking.slotName,
+                      date: booking.date,
+                      startTime: booking.startTime,
+                      endTime: booking.endTime,
+                    })}
                   </p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -188,6 +195,17 @@ export function StudentDashboardOverview() {
           )}
         </CardContent>
       </Card>
+
+      <p className="text-muted-foreground text-center text-sm">
+        Completed a session?{" "}
+        <Link
+          href="/dashboard/bookings"
+          className="text-primary font-medium underline underline-offset-4 hover:no-underline"
+        >
+          Leave feedback
+        </Link>{" "}
+        from your Bookings page.
+      </p>
     </div>
   );
 }

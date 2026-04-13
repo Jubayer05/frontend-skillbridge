@@ -31,6 +31,11 @@ const timeRegex = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
 const slotFormSchema = z
   .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, "Slot name is required")
+      .max(120, "At most 120 characters"),
     categoryId: z.string().uuid("Select a category"),
     subjectId: z.string().uuid("Select a subject"),
     date: z
@@ -97,6 +102,7 @@ export function TutorAvailabilitySlotForm({
     defaultValues:
       mode === "edit" && slot
         ? {
+            name: slot.name.trim() ? slot.name : "",
             categoryId: slot.subject?.category.id ?? "",
             subjectId: slot.subject?.id ?? "",
             date: slot.date,
@@ -106,6 +112,7 @@ export function TutorAvailabilitySlotForm({
             status: slot.status,
           }
         : {
+            name: "",
             categoryId: "",
             subjectId: "",
             date: "",
@@ -151,6 +158,7 @@ export function TutorAvailabilitySlotForm({
   const onSubmit = (data: TutorAvailabilitySlotFormValues) => {
     if (mode === "create") {
       const body: {
+        name: string;
         subjectId: string;
         date: string;
         startTime: string;
@@ -158,6 +166,7 @@ export function TutorAvailabilitySlotForm({
         price: number | string;
         status?: AvailabilitySlotStatus;
       } = {
+        name: data.name.trim(),
         subjectId: data.subjectId,
         date: data.date,
         startTime: data.startTime,
@@ -181,6 +190,7 @@ export function TutorAvailabilitySlotForm({
     if (!slot) return;
 
     return updateAvailabilitySlot(slot.id, {
+      name: data.name.trim(),
       subjectId: data.subjectId,
       date: data.date,
       startTime: data.startTime,
@@ -203,6 +213,21 @@ export function TutorAvailabilitySlotForm({
       onSubmit={handleSubmit(onSubmit)}
       className="mx-auto flex max-w-lg flex-col gap-5"
     >
+      <div className="grid gap-2">
+        <Label htmlFor="slotName">Slot name</Label>
+        <Input
+          id="slotName"
+          placeholder="e.g. Morning calculus · Week 4 review"
+          {...register("name")}
+        />
+        {errors.name && (
+          <p className="text-sm text-destructive">{errors.name.message}</p>
+        )}
+        <p className="text-muted-foreground text-xs">
+          Students see this together with the date and time. Reusing the same name is fine.
+        </p>
+      </div>
+
       <div className="grid gap-2">
         <Label htmlFor="categoryId">Category</Label>
         <Controller

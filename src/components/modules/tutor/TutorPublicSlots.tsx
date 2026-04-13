@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatSlotTitle } from "@/lib/slot-display";
 import { listAvailabilitySlotsByTutor } from "@/services/availability";
 import { getTutorProfileByUserId } from "@/services/profile";
 import type { AvailabilitySlot } from "@/types/availability";
@@ -91,13 +92,20 @@ export function TutorPublicSlots({ tutorUserId }: { tutorUserId: string }) {
         </Button>
       </div>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {displayName}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Open availability slots you can book.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {displayName}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Open availability slots you can book.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/tutors/${encodeURIComponent(tutorUserId)}`}>
+            View profile & reviews
+          </Link>
+        </Button>
       </div>
 
       {!slots || slots.length === 0 ? (
@@ -111,11 +119,8 @@ export function TutorPublicSlots({ tutorUserId }: { tutorUserId: string }) {
               <Card className="h-full">
                 <CardHeader className="pb-2">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <CardTitle className="text-base font-medium">
-                      {slot.date}{" "}
-                      <span className="text-muted-foreground font-normal">
-                        {slot.startTime}–{slot.endTime}
-                      </span>
+                    <CardTitle className="text-base font-medium leading-snug">
+                      {formatSlotTitle(slot)}
                     </CardTitle>
                     <span className="text-muted-foreground text-xs capitalize">
                       {slot.status}
