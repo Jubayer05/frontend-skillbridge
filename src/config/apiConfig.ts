@@ -1,5 +1,8 @@
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+/**
+ * Use same-origin API paths by default so auth/session cookies stay first-party
+ * in production deployments (e.g. Vercel), avoiding cross-site cookie drops.
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const AUTH_BASE_URL = BASE_URL.replace(/\/api\/v1$/, "/api/auth");
 
 export const API_ENDPOINTS = {
